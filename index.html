@@ -18,16 +18,16 @@
 </head>
 <body>
   <div class="page">
-    <h1>LED Marquee — demo (тёмная тема)</h1>
+    <h1>Тест бегущей строки</h1>
     <div id="place" class="place"></div>
-    <div class="note">Кликните по области для запуска/остановки.</div>
+    <div class="note">Работает.</div>
   </div>
 
   <script type="module">
     import { initLedMarquee } from './Strip.js';
     const place = document.getElementById('place');
 
-    // Создаём маркиз внутри place; позиционирование строки — управляется стилями контейнера place.
+
     const marquee = initLedMarquee(place, {
       widthPx: 160,
       text: 'HELLO WORLD!',
@@ -49,3 +49,4 @@
   </script>
 </body>
 </html>
+
