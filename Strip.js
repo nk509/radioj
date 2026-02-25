@@ -272,14 +272,14 @@ export function initLedMarquee(container, options = {}) {
     start(text = (options.text || 'HELLO'), speed = (options.speed ?? SPEED_DEFAULT)) {
       if (running) api.stop();
       const cols = textToCols(text);
-      let offset = COLS;
+      let offset = 0;
       clear();
       running = true;
       function frame(){
         if (!running) return;
         clear();
         for (let i=0;i<cols.length;i++){
-          const sx = i + offset - cols.length;
+          const sx = i;
           if (sx >= 0 && sx < COLS) drawColAt(sx, cols[i]);
         }
         offset--;
@@ -299,3 +299,4 @@ export function initLedMarquee(container, options = {}) {
   if (options.text) api.start(options.text, options.speed);
   return api;
 }
+
