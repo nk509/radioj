@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<title>LED Marquee Demo</title>
+<style>
+  :root{
+    --bg:#070708;
+    --panel:#0c0c0d;
+    --muted:#9aa0a6;
+  }
+  html,body{height:100%; margin:0; background:var(--bg); color:var(--muted); font-family:system-ui,Segoe UI,Roboto,Arial; display:flex; align-items:center; justify-content:center;}
+  .page { width:900px; max-width:95vw; padding:20px; background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent); border:1px solid rgba(255,255,255,0.04); border-radius:8px; }
+  h1{color:#e6eef3; font-size:18px; margin:0 0 12px 0;}
+  .place { width:800px; height:80px; position:relative; border:1px solid rgba(255,255,255,0.04); background:var(--panel); display:flex; align-items:center; justify-content:center; }
+  .note{font-size:13px; color:var(--muted); margin-top:12px;}
+</style>
+</head>
+<body>
+  <div class="page">
+    <h1>LED Marquee — demo (тёмная тема)</h1>
+    <div id="place" class="place"></div>
+    <div class="note">Кликните по области для запуска/остановки.</div>
+  </div>
+
+  <script type="module">
+    import { initLedMarquee } from './Strip.js';
+    const place = document.getElementById('place');
+
+    // Создаём маркиз внутри place; позиционирование строки — управляется стилями контейнера place.
+    const marquee = initLedMarquee(place, {
+      widthPx: 160,
+      text: 'HELLO WORLD!',
+      speed: 40,
+      color: '#4db8ff',
+      pixelSize: 3,
+      gap: 1
+    });
+
+    // клик — запуск/остановка
+    let running = true;
+    place.addEventListener('click', () => {
+      if (running) { marquee.stop(); running = false; }
+      else { marquee.start(); running = true; }
+    });
+
+    // старт по умолчанию
+    marquee.start();
+  </script>
+</body>
+</html>
