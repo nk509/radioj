@@ -69,7 +69,7 @@ header {
   animation: spin-slow 10s linear infinite;
 }
 @keyframes spin-slow { to { transform: rotate(360deg); } }
-.station-count { font-family: var(--font-head); font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; }
+.station-count { font-family: var(--font-head); font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; display: none; }
 .station-count span { color: var(--accent3); }
 
 /* ── Controls ─────────────────────────────────── */
@@ -107,14 +107,6 @@ select {
 select:focus, select:hover { border-color: var(--accent); box-shadow: 0 0 10px rgba(0,229,255,0.15); }
 select option { background: #111827; }
 #range-select { min-width: 110px; }
-.load-btn {
-  background: transparent; border: 1px solid var(--accent); color: var(--accent);
-  font-family: var(--font-head); font-size: 0.63rem; letter-spacing: 0.1em;
-  padding: 9px 18px; border-radius: 6px; cursor: pointer; text-transform: uppercase;
-  transition: all 0.2s; box-shadow: 0 0 8px rgba(0,229,255,0.1);
-}
-.load-btn:hover { background: rgba(0,229,255,0.1); box-shadow: 0 0 18px rgba(0,229,255,0.3); }
-.load-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .status-bar { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.04em; flex: 1; text-align: right; }
 .status-bar .hl { color: var(--accent); }
 .status-bar .err { color: var(--accent2); }
@@ -277,10 +269,11 @@ select option { background: #111827; }
 /* ── Chat block ───────────────────────────────── */
 .chat-section {
   width: 60%;
-  margin: 0 auto 20px;
+  margin: 0 auto;
+  padding-bottom: 80px; /* clear fixed now-playing bar */
 }
 @media (max-width: 679px) {
-  .chat-section { display: none; width: 100%; margin: 0; }
+  .chat-section { display: none; width: 100%; margin: 0; padding-bottom: 0; }
 }
 
 .chat-box {
@@ -322,8 +315,8 @@ select option { background: #111827; }
 .chat-messages {
   height: 240px;
   overflow-y: auto;
-  padding: 10px 12px;
-  display: flex; flex-direction: column; gap: 6px;
+  padding: 8px 12px;
+  display: flex; flex-direction: column; gap: 3px;
   scroll-behavior: smooth;
 }
 .chat-messages::-webkit-scrollbar { width: 4px; }
@@ -332,26 +325,23 @@ select option { background: #111827; }
 
 /* Regular text message */
 .chat-msg {
-  display: flex; flex-direction: column; gap: 2px;
+  display: flex; flex-direction: column; gap: 1px;
   max-width: 80%;
 }
 .chat-msg.mine { align-self: flex-end; align-items: flex-end; }
 .chat-msg.theirs { align-self: flex-start; align-items: flex-start; }
 
-.chat-msg-nick {
-  font-family: var(--font-head); font-size: 0.48rem;
-  color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase;
+/* Desktop: all messages left-aligned, nick left of bubble */
+@media (min-width: 680px) {
+  .chat-msg { max-width: 92%; }
+  .chat-msg.mine { align-self: flex-start; align-items: flex-start; }
+  .chat-msg.mine .chat-msg-bubble { border-radius: 10px 10px 10px 2px; }
+  .chat-msg-header {
+    display: flex; align-items: baseline; gap: 6px; width: 100%;
+  }
 }
-.chat-msg-bubble {
-  padding: 6px 10px;
-  border-radius: 10px;
-  font-size: 0.75rem; line-height: 1.4;
-  word-break: break-word;
-}
-.chat-msg.mine  .chat-msg-bubble { background: rgba(0,229,255,0.1); border: 1px solid rgba(0,229,255,0.2); color: var(--text); border-radius: 10px 10px 2px 10px; }
-.chat-msg.theirs .chat-msg-bubble { background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text); border-radius: 10px 10px 10px 2px; }
 
-/* Station card in chat */
+/* bubble + time wrapper */
 .chat-station-card {
   display: flex; align-items: center; gap: 10px;
   padding: 8px 10px;
@@ -395,8 +385,63 @@ select option { background: #111827; }
 .chat-card-fav:hover { color: var(--accent2); }
 .chat-card-fav.active { color: var(--accent2); }
 
+.chat-msg-nick {
+  font-family: var(--font-head); font-size: 0.52rem;
+  color: rgba(255,60,172,0.85); letter-spacing: 0.08em; text-transform: uppercase;
+  font-weight: 700;
+}
+.chat-msg-bubble {
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 0.75rem; line-height: 1.4;
+  word-break: break-word;
+}
+.chat-msg.mine  .chat-msg-bubble { background: rgba(0,229,255,0.1); border: 1px solid rgba(0,229,255,0.2); color: var(--text); border-radius: 10px 10px 2px 10px; }
+.chat-msg.theirs .chat-msg-bubble { background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text); border-radius: 10px 10px 10px 2px; }
+
+/* bubble + time wrapper */
+.chat-bubble-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Desktop: nick left, time right inline with nick above bubble */
+@media (min-width: 680px) {
+  .chat-bubble-row {
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 6px;
+  }
+  /* Nick row: nick on left, time pushed right */
+  .chat-msg-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    width: 100%;
+    justify-content: space-between;
+    margin-bottom: 2px;
+  }
+}
+
 .chat-msg-time {
-  font-size: 0.48rem; color: var(--muted); letter-spacing: 0.04em;
+  font-size: 0.52rem; color: rgba(255,60,172,0.75); letter-spacing: 0.04em;
+  white-space: nowrap; flex-shrink: 0;
+}
+
+/* Chat meta row (nick + time) */
+.chat-msg-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  margin-bottom: 2px;
+}
+
+/* On mobile: hide time in meta, show only nick */
+@media (max-width: 679px) {
+  .chat-msg-meta .chat-msg-time { display: none; }
 }
 
 /* System messages */
@@ -412,6 +457,10 @@ select option { background: #111827; }
   padding: 8px 10px;
   border-top: 1px solid var(--border);
   display: flex; gap: 8px; align-items: center;
+  position: sticky;
+  bottom: 0;
+  background: var(--surface);
+  z-index: 2;
 }
 .chat-nick-input {
   width: 80px; flex-shrink: 0;
@@ -468,13 +517,12 @@ select option { background: #111827; }
 }
 @media (max-width: 679px) {
   .chat-drawer-bar { display: flex; }
-  /* Shift chat bar up when player is visible */
-  body.player-visible .chat-drawer-bar { bottom: 68px; }
+  /* now-playing bar always visible — shift chat bar up permanently */
+  .chat-drawer-bar { bottom: 68px; }
   /* Player always at 44px from bottom (above chat bar) */
   .now-playing { bottom: 44px; z-index: 101; }
   /* Enough padding for both bars */
   .bottom-pad { height: 120px; }
-  body.player-visible .bottom-pad { height: 120px; }
 }
 .chat-drawer-icon {
   font-size: 0.8rem;
@@ -532,12 +580,20 @@ select option { background: #111827; }
   border-radius: 6px;
   overflow: hidden;
   position: relative;
-  height: 28px;
+  height: 18px;
   display: flex;
   align-items: center;
 }
 
-/* No left mask — text starts visible near the left edge */
+.ticker-inner {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  will-change: transform;
+  height: 100%;
+  padding-left: 0;
+}
+
 /* Right fade mask only */
 .ticker-wrap::after {
   content: '';
@@ -546,18 +602,11 @@ select option { background: #111827; }
   z-index: 2; pointer-events: none;
 }
 
-.ticker-inner {
-  display: flex;
-  white-space: nowrap;
-  will-change: transform;
-  /* Start offset: text begins 20px from left edge, then scrolls left */
-  padding-left: 20px;
-}
-
 .ticker-text {
   font-family: var(--font-head);
-  font-size: 0.68rem;
+  font-size: 0.56rem;
   font-weight: 700;
+  line-height: 1;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   image-rendering: pixelated;
@@ -565,7 +614,6 @@ select option { background: #111827; }
   font-smooth: never;
   color: var(--accent);
   text-shadow: 0 0 8px rgba(0,229,255,0.5);
-  /* Space between repeats */
   padding-right: 80px;
 }
 
@@ -601,25 +649,32 @@ select option { background: #111827; }
   50% { opacity: 0.4; }
 }
 
-/* ticker-scroll keyframe: from offset start to one full text width left */
+/* ticker-scroll keyframe: from center offset to one full text width left */
 @keyframes ticker-scroll {
-  0%   { transform: translateX(0); }
+  0%   { transform: translateX(var(--ticker-start, 0px)); }
   100% { transform: translateX(var(--ticker-shift, -50%)); }
 }
 
 /* ── Tuner row ────────────────────────────────── */
-.tuner-section { padding: 0 40px 20px; }
+.tuner-section { padding: 0 0px 20px; }
 
-/* Desktop: CRT left, slider right */
+/* Desktop: crt-tuner-inner holds frame+tuner side by side at matching height */
 .tuner-row {
-  display: flex;
-  gap: 18px;
-  align-items: flex-start;
+  display: block;
+}
+@media (min-width: 680px) {
+  .tuner-row { display: block; }
 }
 
-/* Mobile: stack vertically, CRT centered above ticker+slider */
+.crt-tuner-inner {
+  display: flex;
+  gap: 18px;
+  align-items: stretch;
+}
+
+/* Mobile: stack vertically */
 @media (max-width: 679px) {
-  .tuner-row {
+  .crt-tuner-inner {
     flex-direction: column;
     align-items: center;
   }
@@ -630,7 +685,6 @@ select option { background: #111827; }
   }
   .tuner-box {
     width: 100% !important;
-    align-self: stretch !important;
   }
   /* On mobile ticker is INSIDE tuner-box, between CRT and slider */
   .ticker-wrap { margin-bottom: 10px; }
@@ -707,13 +761,13 @@ select option { background: #111827; }
   background: radial-gradient(ellipse at center, #060d18 0%, #020509 100%);
   display: flex; align-items: center; justify-content: center;
   overflow: hidden; position: relative;
-  border-radius: 12px / 10px;
+  border-radius: 18% / 12%;
   box-shadow:
     inset 0 0 0 1px rgba(0,0,0,0.8),
-    inset 4px 0 12px rgba(0,0,0,0.6),
-    inset -4px 0 12px rgba(0,0,0,0.6),
-    inset 0 4px 12px rgba(0,0,0,0.5),
-    inset 0 -4px 12px rgba(0,0,0,0.5);
+    inset 6px 0 18px rgba(0,0,0,0.65),
+    inset -6px 0 18px rgba(0,0,0,0.65),
+    inset 0 5px 16px rgba(0,0,0,0.55),
+    inset 0 -5px 16px rgba(0,0,0,0.55);
   transition: box-shadow 0.2s;
 }
 
@@ -732,7 +786,7 @@ select option { background: #111827; }
 
 /* On mobile: wider screen */
 @media (max-width: 679px) {
-  .crt-screen { aspect-ratio: 4 / 3; border-radius: 12px / 10px; }
+  .crt-screen { aspect-ratio: 4 / 3; border-radius: 18% / 12%; }
   .crt-frame  { border-radius: 14px; }
   .crt-frame::before { border-radius: 10px; }
   .crt-screen-wrap { border-radius: 10px; }
@@ -760,7 +814,7 @@ select option { background: #111827; }
 }
 
 .crt-img {
-  width: 72px; height: 72px; object-fit: contain;
+  width: 80%; height: 80%; object-fit: contain;
   position: relative; z-index: 2;
   filter: brightness(0.92) contrast(1.08) saturate(1.1);
   animation: crt-flicker 7s ease-in-out infinite;
@@ -768,7 +822,7 @@ select option { background: #111827; }
 
 /* On mobile: bigger logo in wide screen */
 @media (max-width: 679px) {
-  .crt-img { width: 52px; height: 52px; }
+  .crt-img { width: 75%; height: 75%; }
 }
 
 @keyframes crt-flicker {
@@ -789,6 +843,14 @@ select option { background: #111827; }
   font-family: var(--font-head); font-size: 0.38rem; color: rgba(0,229,255,0.4);
   text-align: center; letter-spacing: 0.08em;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* namestrip + dots sit below the crt-tuner-inner row, aligned under the CRT */
+@media (min-width: 680px) {
+  .tuner-row .crt-namestrip,
+  .tuner-row .crt-dots {
+    width: 148px;
+  }
 }
 
 /* Name strip below frame */
@@ -816,9 +878,8 @@ select option { background: #111827; }
   background: var(--surface); border: 1px solid var(--border);
   border-radius: 10px; padding: 16px 20px 14px;
   position: relative; overflow: hidden;
-  /* Critical: don't grow to fill CRT height */
-  align-self: flex-start;
   width: 100%;
+  display: flex; flex-direction: column;
 }
 .tuner-box::before {
   content: ''; position: absolute; inset: 0;
@@ -827,7 +888,7 @@ select option { background: #111827; }
 }
 .tuner-top {
   display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 10px; gap: 10px;
+  margin-bottom: 18px; gap: 10px;
 }
 .tuner-label {
   font-family: var(--font-head); font-size: 0.55rem; color: var(--muted);
@@ -850,8 +911,21 @@ select option { background: #111827; }
   min-width: 55px; text-align: right; flex-shrink: 0;
 }
 
+/* Centre info label — styled like ticker-text */
+.tuner-station-info {
+  font-family: var(--font-head);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  text-shadow: 0 0 8px rgba(0,229,255,0.5);
+  flex: 1; text-align: center;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
 /* Scale */
-.tuner-scale { position: relative; height: 22px; margin-bottom: 3px; }
+.tuner-scale { position: relative; height: 22px; margin-bottom: 10px; }
 .tuner-marks {
   display: flex; justify-content: space-between; position: absolute;
   inset: 0 9px; align-items: flex-end;
@@ -928,11 +1002,8 @@ input[type=range]::-moz-range-thumb {
   display: flex; align-items: center; gap: 14px;
   z-index: 100; backdrop-filter: blur(10px);
   border-top: 1px solid var(--border);
-  transform: translateY(100%);
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   flex-wrap: wrap;
 }
-.now-playing.visible { transform: translateY(0); }
 
 .np-eq { display: flex; align-items: flex-end; gap: 3px; height: 22px; flex-shrink: 0; }
 .np-bar {
@@ -1050,16 +1121,243 @@ input[type=range]::-moz-range-thumb {
   text-align: center;
 }
 
-.bottom-pad { height: 90px; }
+.bottom-pad { height: 10px; }
+@media (min-width: 680px) {
+  .chat-messages { height: 340px; }
+}
 
 @media (max-width: 679px) {
   header { padding-left: 16px; padding-right: 16px; }
   .controls { padding-left: 16px; padding-right: 16px; }
   .tuner-section { padding-left: 16px; padding-right: 16px; }
   .now-playing { padding: 12px 16px 16px; }
+  /* Fit header buttons on small screens */
+  .logo { font-size: 1rem; letter-spacing: 0.08em; }
+  .logo-icon { width: 28px; height: 28px; font-size: 13px; }
+  .hdr-btn { width: 28px; height: 28px; font-size: 0.75rem; }
+  .hdr-btn-lang { font-size: 0.52rem; padding: 0 7px; }
+  .header-btns { gap: 4px; }
 }
+/* ── Light skin overrides ─────────────────────── */
+.skin-light body::before {
+  background-image:
+    linear-gradient(rgba(0,119,204,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,119,204,0.06) 1px, transparent 1px);
+}
+.skin-light body::after {
+  background: radial-gradient(circle, rgba(0,119,204,0.08) 0%, transparent 70%);
+}
+.skin-light .blob2 {
+  background: radial-gradient(circle, rgba(224,0,106,0.06) 0%, transparent 70%);
+}
+
+.hdr-btn-rpg {
+  color: var(--accent3);
+  border-color: rgba(255,204,0,0.35);
+  font-size: 1rem;
+}
+.hdr-btn-rpg:hover {
+  border-color: var(--accent3) !important;
+  color: var(--accent3) !important;
+  box-shadow: 0 0 10px rgba(255,204,0,0.2) !important;
+}
+
+/* ── Header buttons ───────────────────────────── */
+.header-btns {
+  display: flex; align-items: center; gap: 6px;
+  position: relative;
+}
+.hdr-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.85rem;
+  width: 34px; height: 34px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-family: var(--font-head);
+  letter-spacing: 0.06em;
+}
+.hdr-btn:hover, .hdr-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 10px rgba(0,229,255,0.15);
+}
+.hdr-btn-lang {
+  font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em;
+  color: var(--accent); border-color: rgba(0,229,255,0.3);
+  width: auto; padding: 0 10px;
+}
+.hdr-btn-burger { padding: 0; }
+.burger-lines {
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  gap: 3px; width: 16px; height: 16px;
+}
+.burger-lines span {
+  display: block; height: 2px;
+  background: currentColor; border-radius: 1px; transition: background 0.2s;
+}
+.burger-lines span:nth-child(1) { width: 14px; }
+.burger-lines span:nth-child(2) { width: 10px; }
+.burger-lines span:nth-child(3) { width: 7px; }
+.menu-icon { font-style: normal; width: 16px; text-align: center; flex-shrink: 0; }
+
+/* ── Header dropdown panels ───────────────────── */
+.hdr-panel {
+  position: absolute; top: calc(100% + 10px); right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  min-width: 180px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 20px rgba(0,229,255,0.06);
+  z-index: 200;
+  display: none; overflow: hidden;
+  animation: panelIn 0.15s ease;
+}
+.hdr-panel.open { display: block; }
+@keyframes panelIn {
+  from { opacity:0; transform:translateY(-6px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.hdr-panel-title {
+  font-family: var(--font-head); font-size: 0.52rem;
+  color: var(--muted); letter-spacing: 0.14em; text-transform: uppercase;
+  padding: 10px 14px 8px; border-bottom: 1px solid var(--border);
+}
+
+/* ── Skin panel ───────────────────────────────── */
+.skin-list { padding: 10px; display: flex; flex-direction: column; gap: 4px; }
+.skin-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 8px; border-radius: 6px; cursor: pointer;
+  font-family: var(--font-head); font-size: 0.6rem;
+  color: var(--muted); letter-spacing: 0.08em;
+  transition: background 0.15s, color 0.15s; text-transform: uppercase;
+}
+.skin-item:hover { background: rgba(0,229,255,0.06); color: var(--text); }
+.skin-item.active { color: var(--accent); background: rgba(0,229,255,0.08); }
+.skin-preview {
+  width: 26px; height: 18px; border-radius: 4px;
+  border: 1px solid var(--border); flex-shrink: 0;
+}
+
+/* ── Language panel ───────────────────────────── */
+.lang-list { padding: 8px; display: flex; flex-direction: column; gap: 2px; }
+.lang-item {
+  padding: 8px 10px; border-radius: 6px; cursor: pointer;
+  font-family: var(--font-head); font-size: 0.62rem;
+  color: var(--muted); letter-spacing: 0.06em;
+  transition: background 0.15s, color 0.15s;
+}
+.lang-item:hover { background: rgba(0,229,255,0.06); color: var(--text); }
+.lang-item.active { color: var(--accent); background: rgba(0,229,255,0.08); }
+
+/* ── Menu panel ───────────────────────────────── */
+.hdr-panel-menu { min-width: 200px; }
+.menu-list { padding: 8px; display: flex; flex-direction: column; gap: 2px; }
+.menu-item {
+  padding: 8px 10px; border-radius: 6px; cursor: pointer;
+  font-family: var(--font-head); font-size: 0.6rem;
+  color: var(--accent); letter-spacing: 0.1em;
+  text-shadow: 0 0 8px var(--accent), 0 0 18px rgba(0,229,255,0.4);
+  transition: background 0.15s, color 0.15s, text-shadow 0.15s;
+  display: flex; align-items: center; gap: 8px;
+}
+.menu-item .menu-icon {
+  color: var(--accent2);
+  text-shadow: 0 0 8px var(--accent2), 0 0 18px rgba(255,60,172,0.5);
+  font-size: 0.85rem;
+}
+.menu-item:hover {
+  background: rgba(0,229,255,0.06);
+  color: #fff;
+  text-shadow: 0 0 10px var(--accent), 0 0 24px var(--accent), 0 0 40px rgba(0,229,255,0.5);
+}
+.menu-item:hover .menu-icon {
+  text-shadow: 0 0 10px var(--accent2), 0 0 24px var(--accent2), 0 0 40px rgba(255,60,172,0.6);
+}
+.menu-sep { height: 1px; background: var(--border); margin: 4px 0; }
+
+/* ── Info modals ──────────────────────────────── */
+.info-modal-overlay {
+  position: fixed; inset: 0; z-index: 400;
+  background: rgba(4,6,14,0.88); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.info-modal-overlay.open { opacity: 1; pointer-events: all; }
+.info-modal {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  width: min(480px, 92vw); max-height: 80vh;
+  display: flex; flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 30px rgba(0,229,255,0.06);
+  transform: translateY(12px); transition: transform 0.2s; overflow: hidden;
+}
+.info-modal-overlay.open .info-modal { transform: translateY(0); }
+.info-modal-header {
+  padding: 14px 18px 12px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.info-modal-title {
+  font-family: var(--font-head); font-size: 0.68rem; font-weight: 700;
+  color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase;
+}
+.info-modal-close {
+  background: transparent; border: none; color: var(--muted);
+  font-size: 1.1rem; cursor: pointer; line-height: 1;
+  padding: 2px 6px; transition: color 0.15s;
+}
+.info-modal-close:hover { color: var(--text); }
+.info-modal-body { padding: 16px 18px 20px; overflow-y: auto; flex: 1; }
+.settings-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0; border-bottom: 1px solid rgba(30,45,69,0.5); gap: 12px;
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-label {
+  font-family: var(--font-head); font-size: 0.6rem;
+  color: var(--text); letter-spacing: 0.07em;
+}
+.settings-desc { font-size: 0.58rem; color: var(--muted); margin-top: 2px; }
+.settings-action {
+  background: transparent; border: 1px solid var(--border); color: var(--muted);
+  font-family: var(--font-head); font-size: 0.56rem; letter-spacing: 0.08em;
+  padding: 5px 12px; border-radius: 5px; cursor: pointer;
+  text-transform: uppercase; transition: all 0.18s; white-space: nowrap; flex-shrink: 0;
+}
+.settings-action:hover { border-color: var(--accent); color: var(--accent); }
+.settings-action.danger:hover { border-color: var(--accent2); color: var(--accent2); }
+.hotkey-table { width: 100%; border-collapse: collapse; }
+.hotkey-table tr { border-bottom: 1px solid rgba(30,45,69,0.5); }
+.hotkey-table tr:last-child { border-bottom: none; }
+.hotkey-table td { padding: 9px 4px; font-size: 0.64rem; }
+.hotkey-kbd {
+  display: inline-block; background: rgba(0,229,255,0.07);
+  border: 1px solid rgba(0,229,255,0.2); border-radius: 4px;
+  padding: 2px 7px; font-family: var(--font-head); font-size: 0.55rem;
+  color: var(--accent); letter-spacing: 0.06em;
+}
+.hotkey-desc { color: var(--text); padding-left: 12px; }
+.about-logo {
+  font-family: var(--font-head); font-size: 1.1rem; font-weight: 900;
+  color: var(--accent); letter-spacing: 0.12em;
+  text-shadow: 0 0 16px rgba(0,229,255,0.4); margin-bottom: 6px;
+}
+.about-ver { font-family: var(--font-head); font-size: 0.52rem; color: var(--muted); letter-spacing: 0.1em; margin-bottom: 14px; }
+.about-text { font-size: 0.7rem; color: var(--muted); line-height: 1.7; margin-bottom: 14px; }
+.about-links { display: flex; flex-wrap: wrap; gap: 8px; }
+.about-link {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: var(--font-head); font-size: 0.56rem; color: var(--accent);
+  letter-spacing: 0.06em; text-decoration: none; padding: 5px 12px;
+  border-radius: 5px; border: 1px solid rgba(0,229,255,0.25); transition: all 0.18s;
+}
+.about-link:hover { background: rgba(0,229,255,0.08); box-shadow: 0 0 10px rgba(0,229,255,0.15); }
 </style>
-</head>
 <body>
 <div class="blob2"></div>
 <div class="wrap">
@@ -1069,7 +1367,85 @@ input[type=range]::-moz-range-thumb {
     <div class="logo-icon">📻</div>
     RADIO//WAVE
   </div>
-  <div class="station-count" id="station-count">STATIONS: <span>—</span></div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="station-count" id="station-count">STATIONS: <span>—</span></div>
+    <div class="header-btns">
+
+      <!-- RPG game button -->
+      <button class="hdr-btn hdr-btn-rpg" onclick="window.open('rpg-game.html','_blank')" title="Dungeon RPG">⚔</button>
+
+      <!-- Skin: paintbrush SVG -->
+      <button class="hdr-btn" id="skin-btn" onclick="toggleSkinPanel()" title="Скины">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18.37 2.63 14 7l-1.59-1.59a2 2 0 0 0-2.82 0L8 7l9 9 1.59-1.59a2 2 0 0 0 0-2.82L17 10l4.37-4.37a2.12 2.12 0 1 0-3-3Z"/>
+          <path d="M9 8c-2 3-4 3.5-7 4l8 10c2-1 6-5 6-7"/>
+          <path d="M14.5 17.5 4.5 15"/>
+        </svg>
+      </button>
+
+      <!-- Language: 2-letter label -->
+      <button class="hdr-btn hdr-btn-lang" id="lang-btn" onclick="toggleLangPanel()">RU</button>
+
+      <!-- Burger: three lines -->
+      <button class="hdr-btn hdr-btn-burger" id="menu-btn" onclick="toggleMenuPanel()" title="Меню">
+        <span class="burger-lines">
+          <span></span><span></span><span></span>
+        </span>
+      </button>
+
+      <!-- Skin panel -->
+      <div class="hdr-panel" id="skin-panel">
+        <div class="hdr-panel-title" data-i18n="skins">СКИНЫ</div>
+        <div class="skin-list">
+          <div class="skin-item active" data-skin="dark" onclick="setSkin('dark')">
+            <div class="skin-preview" style="background:linear-gradient(135deg,#080b12 40%,#00e5ff55)"></div>
+            <span data-i18n="skin_dark">Тёмный</span>
+          </div>
+          <div class="skin-item" data-skin="light" onclick="setSkin('light')">
+            <div class="skin-preview" style="background:linear-gradient(135deg,#f0f4f8 40%,#0077cc55)"></div>
+            <span data-i18n="skin_light">Светлый</span>
+          </div>
+          <div class="skin-item" data-skin="neon" onclick="setSkin('neon')">
+            <div class="skin-preview" style="background:linear-gradient(135deg,#080010 40%,#ff00ff66)"></div>
+            <span data-i18n="skin_neon">Неон</span>
+          </div>
+          <div class="skin-item" data-skin="retro" onclick="setSkin('retro')">
+            <div class="skin-preview" style="background:linear-gradient(135deg,#000800 40%,#33ff3366)"></div>
+            <span data-i18n="skin_retro">Ретро</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Language panel -->
+      <div class="hdr-panel" id="lang-panel">
+        <div class="hdr-panel-title">LANGUAGE</div>
+        <div class="lang-list">
+          <div class="lang-item" data-lang="ru" onclick="setLang('ru')">🇷🇺 Русский</div>
+          <div class="lang-item" data-lang="en" onclick="setLang('en')">🇬🇧 English</div>
+          <div class="lang-item" data-lang="de" onclick="setLang('de')">🇩🇪 Deutsch</div>
+          <div class="lang-item" data-lang="fr" onclick="setLang('fr')">🇫🇷 Français</div>
+          <div class="lang-item" data-lang="es" onclick="setLang('es')">🇪🇸 Español</div>
+        </div>
+      </div>
+
+      <!-- Menu panel -->
+      <div class="hdr-panel hdr-panel-menu" id="menu-panel">
+        <div class="hdr-panel-title" data-i18n="menu">МЕНЮ</div>
+        <div class="menu-list">
+          <div class="menu-item" onclick="openInfoModal('settings');closeAllPanels()">
+            <span class="menu-icon">⚙</span><span data-i18n="menu_settings">Настройки</span>
+          </div>
+          <div class="menu-item" onclick="openInfoModal('hotkeys');closeAllPanels()">
+            <span class="menu-icon">⌨</span><span data-i18n="menu_hotkeys">Горячие клавиши</span>
+          </div>
+          <div class="menu-item" onclick="openInfoModal('about');closeAllPanels()">
+            <span class="menu-icon">ℹ</span><span data-i18n="menu_about">О проекте</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
 </header>
 
 <div class="controls">
@@ -1079,14 +1455,14 @@ input[type=range]::-moz-range-thumb {
     </select>
   </div>
   <button class="edit-tags-btn" onclick="openTagEditor()" title="Редактировать теги">⚙</button>
-  <div class="select-wrap" id="range-wrap" style="display:none">
-    <select id="range-select">
-      <option value="0">1–100</option>
+  <div class="select-wrap" id="range-wrap">
+    <select id="range-select" onchange="loadStations()">
+      <option value="0">Band 1</option>
     </select>
   </div>
-  <button class="load-btn" id="load-btn" onclick="loadStations()">▶ Загрузить</button>
   <button class="fav-btn" id="fav-btn" onclick="loadFavourites()">♥ <span id="fav-btn-label">Избранное</span> <span class="fav-count" id="fav-count">0</span></button>
-  <div class="status-bar" id="status-bar">Выберите тег и нажмите загрузить</div>
+  <button class="np-fav" id="controls-fav" onclick="toggleFavourite()" title="В избранное">♡</button>
+  <div class="status-bar" id="status-bar">Загрузка…</div>
 </div>
 
 <!-- Tag editor modal -->
@@ -1113,7 +1489,7 @@ input[type=range]::-moz-range-thumb {
 </div>
 
 <!-- Tuner: CRT + slider side by side -->
-<div class="tuner-section" id="slider-section" style="display:none">
+<div class="tuner-section" id="slider-section">
 
   <!-- Pixel ticker — desktop: above everything; mobile: hidden here, shown inside tuner-box -->
   <div class="ticker-wrap" id="ticker-wrap-desktop">
@@ -1126,33 +1502,27 @@ input[type=range]::-moz-range-thumb {
 
   <div class="tuner-row">
 
-    <!-- CRT Screen only -->
-    <div class="crt-wrap" id="crt-wrap">
-      <div class="crt-frame" id="crt-frame" onclick="crtClick()">
-        <div class="crt-screen-wrap">
-          <div class="crt-screen">
-            <div class="crt-glow" id="crt-glow"></div>
-            <div class="crt-sweep"></div>
-            <img  id="crt-img" class="crt-img" src="" alt=""
-                  style="display:none" onerror="crtImgError()">
-            <div  id="crt-nologo" class="crt-nologo">📻</div>
-            <div  id="crt-screentext" class="crt-screentext"></div>
-          </div>
-        </div>
-        <div class="crt-link-hint" id="crt-link-hint">открыть сайт ↗</div>
-      </div>
-      <div class="crt-namestrip" id="crt-namestrip">NO SIGNAL</div>
-      <div class="crt-dots">
-        <div class="crt-dot" id="d0"></div>
-        <div class="crt-dot" id="d1"></div>
-        <div class="crt-dot" id="d2"></div>
-        <div class="crt-dot" id="d3"></div>
-        <div class="crt-dot" id="d4"></div>
-      </div>
-    </div>
+    <!-- CRT + tuner inner row (frame heights match), then namestrip+dots below -->
+    <div class="crt-tuner-inner">
 
-    <!-- Tuner slider -->
-    <div class="tuner-box">
+      <div class="crt-wrap" id="crt-wrap">
+        <div class="crt-frame" id="crt-frame" onclick="crtClick()">
+          <div class="crt-screen-wrap">
+            <div class="crt-screen">
+              <div class="crt-glow" id="crt-glow"></div>
+              <div class="crt-sweep"></div>
+              <img  id="crt-img" class="crt-img" src="" alt=""
+                    style="display:none">
+              <div  id="crt-nologo" class="crt-nologo">📻</div>
+              <div  id="crt-screentext" class="crt-screentext"></div>
+            </div>
+          </div>
+          <div class="crt-link-hint" id="crt-link-hint">открыть сайт ↗</div>
+        </div>
+      </div>
+
+      <!-- Tuner slider -->
+      <div class="tuner-box">
 
       <!-- Mobile-only ticker (between CRT and slider) -->
       <div class="ticker-wrap" id="ticker-wrap-mobile" style="display:none">
@@ -1165,7 +1535,8 @@ input[type=range]::-moz-range-thumb {
 
       <div class="tuner-top">
         <span class="tuner-label">⬤ Частота</span>
-        <span class="tuner-idx" id="slider-pos">0 / —</span>
+        <span class="tuner-station-info" id="tuner-station-info">—</span>
+        <span class="tuner-idx" id="slider-total">—</span>
       </div>
       <div class="tuner-scale">
         <div class="tuner-marks" id="tuner-marks"></div>
@@ -1176,10 +1547,22 @@ input[type=range]::-moz-range-thumb {
       <input type="range" id="scroll-slider" min="0" max="100" value="0"
              oninput="onSlider(this.value)">
       <div class="tuner-dots" id="tuner-dots"></div>
+    </div><!-- .tuner-box -->
+
+    </div><!-- .crt-tuner-inner -->
+
+    <!-- namestrip and dots below the inner row, under the CRT -->
+    <div class="crt-namestrip" id="crt-namestrip">NO SIGNAL</div>
+    <div class="crt-dots">
+      <div class="crt-dot" id="d0"></div>
+      <div class="crt-dot" id="d1"></div>
+      <div class="crt-dot" id="d2"></div>
+      <div class="crt-dot" id="d3"></div>
+      <div class="crt-dot" id="d4"></div>
     </div>
 
-  </div>
-</div>
+  </div><!-- .tuner-row -->
+</div><!-- .tuner-section -->
 
 <div class="bottom-pad"></div>
 </div><!-- .wrap -->
@@ -1244,7 +1627,18 @@ input[type=range]::-moz-range-thumb {
     <a class="svc-btn yandex"  id="svc-yandex"  href="#" target="_blank" rel="noopener"><span class="svc-icon">🎧</span>Яндекс</a>
   </div>
   <button class="np-fav" id="np-fav" onclick="toggleFavourite()" title="В избранное">♡</button>
-  <button class="np-stop" onclick="stopStation()">■ Стоп</button>
+  <button class="np-stop" id="np-playstop" onclick="togglePlayStop()">▶ Play</button>
+</div>
+
+<!-- ── Info modals ────────────────────────────── -->
+<div class="info-modal-overlay" id="info-modal-overlay" onclick="onInfoOverlayClick(event)">
+  <div class="info-modal">
+    <div class="info-modal-header">
+      <span class="info-modal-title" id="info-modal-title">—</span>
+      <button class="info-modal-close" onclick="closeInfoModal()">✕</button>
+    </div>
+    <div class="info-modal-body" id="info-modal-body"></div>
+  </div>
 </div>
 
 <audio id="audio-player" preload="none"></audio>
@@ -1457,11 +1851,10 @@ let tagCountCache = {};
 
 async function onTagChange() {
   const tag = document.getElementById('tag-select').value;
-  const rangeWrap = document.getElementById('range-wrap');
   const rangeSelect = document.getElementById('range-select');
   const status = document.getElementById('status-bar');
 
-  rangeWrap.style.display = 'none';
+  // Reset to Band 1 while loading
   rangeSelect.innerHTML = '<option value="0">Band 1</option>';
   status.innerHTML = '<span class="hl">Подсчёт станций…</span>';
 
@@ -1475,42 +1868,31 @@ async function onTagChange() {
     }
   }
 
-  // Build range options
-  const pages = Math.ceil(total / PAGE_SIZE);
-  if (pages <= 1) {
-    status.innerHTML = `<span class="hl">${total}</span> станций по тегу`;
-    rangeWrap.style.display = 'none';
-    return;
-  }
-
+  // Build range options (always show, minimum Band 1)
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   rangeSelect.innerHTML = '';
   for (let i = 0; i < pages; i++) {
-    const opt  = document.createElement('option');
-    opt.value  = i * PAGE_SIZE; // offset
+    const opt = document.createElement('option');
+    opt.value = i * PAGE_SIZE;
     opt.textContent = `Band ${i + 1}`;
     if (i === 0) opt.selected = true;
     rangeSelect.appendChild(opt);
   }
 
-  rangeWrap.style.display = 'block';
-  status.innerHTML = `<span class="hl">${total}</span> станций · выберите диапазон`;
+  // Auto-load first band immediately
+  await loadStations();
 }
 
 // ─── Load ─────────────────────────────────────────────────
 async function loadStations() {
   const tag       = document.getElementById('tag-select').value;
   const offset    = parseInt(document.getElementById('range-select').value) || 0;
-  const btn       = document.getElementById('load-btn');
   const status    = document.getElementById('status-bar');
-  const sliderSec = document.getElementById('slider-section');
 
   stopStation(true);
   isFavMode = false;
   document.getElementById('fav-btn').classList.remove('active');
-  btn.disabled    = true;
-  btn.textContent = '⟳ Загрузка...';
   status.innerHTML = '<span class="hl">Запрос к radio-browser.info…</span>';
-  sliderSec.style.display = 'none';
 
   try {
     const data = await fetchStations(tag, offset);
@@ -1523,22 +1905,18 @@ async function loadStations() {
       const rangeLabel = document.getElementById('range-select').selectedOptions[0]?.textContent || '';
       status.innerHTML = `Загружено: <span class="hl">${stations.length}</span> станций${rangeLabel ? ' · ' + rangeLabel : ''}`;
       document.getElementById('station-count').innerHTML = `STATIONS: <span>${stations.length}</span>`;
-      sliderSec.style.display = 'block';
 
       document.getElementById('scroll-slider').value = 0;
       currentIdx = 0;
       setNeedle(0);
       updateDots(0);
-      document.getElementById('slider-pos').textContent = `1 / ${stations.length}`;
+      updateTunerInfo(0);
 
       setTimeout(() => tuneToIndex(0), 400);
     }
   } catch(e) {
     status.innerHTML = `<span class="err">${e.message}</span>`;
   }
-
-  btn.disabled    = false;
-  btn.textContent = '▶ Загрузить';
 }
 
 // ─── Tuner scale marks + dots ─────────────────────────────
@@ -1568,13 +1946,24 @@ function setNeedle(pct) {
   document.getElementById('tuner-needle').style.left = pct + '%';
 }
 
+// ─── Tuner info display ───────────────────────────────────
+function updateTunerInfo(idx) {
+  const rangeOpt = document.getElementById('range-select').selectedOptions[0];
+  const bandNum  = rangeOpt ? rangeOpt.textContent.replace('Band ', '') : '1';
+  const stationNum = idx + 1;
+  document.getElementById('tuner-station-info').textContent =
+    `ST ${stationNum}  ·  BAND ${bandNum}`;
+  document.getElementById('slider-total').textContent =
+    stations.length ? `${stations.length}` : '—';
+}
+
 // ─── Slider handler ───────────────────────────────────────
 function onSlider(val) {
   const maxIdx = stations.length - 1;
   const idx    = Math.round((val / 100) * maxIdx);
 
   setNeedle(val);
-  document.getElementById('slider-pos').textContent  = `${idx + 1} / ${stations.length}`;
+  updateTunerInfo(idx);
   updateDots(idx);
 
   // CRT preview while scanning — show next logo immediately
@@ -1692,13 +2081,20 @@ function setTicker(name, searching = false) {
   const oneW = text1.offsetWidth;
   if (oneW === 0) return;
 
-  // Duration = one full text block / speed (constant regardless of length)
-  const dur = oneW / TICKER_SPEED;
+  // Get container width to calculate center start offset
+  const wrap = inner.parentElement;
+  const wrapW = wrap ? wrap.offsetWidth : 0;
+  // Start: text centered in container; end: one full block shifted left from start
+  const startX = Math.max(0, (wrapW - oneW) / 2);
 
-  // Set CSS custom property so keyframe knows how far to shift
+  // Duration = one full text block / speed (constant regardless of length)
+  const dur = (oneW + startX) / TICKER_SPEED;
+
+  // Set CSS custom properties
+  inner.style.setProperty('--ticker-start', `${startX}px`);
   inner.style.setProperty('--ticker-shift', `-${oneW}px`);
 
-  // Re-enable animation — starts from translateX(0) = text already visible at left
+  // Re-enable animation — starts from center
   inner.style.animation = `ticker-scroll ${dur}s linear infinite`;
 }
 
@@ -1715,8 +2111,12 @@ window.addEventListener('resize', () => {
   if (currentStation) setTicker(currentStation.name, false);
 });
 
-// Init: build tag select from saved/default list, then fetch count
+// Init: build tag select from saved/default list, then fetch count and auto-load
 window.addEventListener('DOMContentLoaded', () => {
+  const crtImg = document.getElementById('crt-img');
+  if (crtImg) crtImg.onerror = crtImgError;
+  loadSkin();
+  loadLang();
   rebuildTagSelect();
   onTagChange();
   updateFavCount();
@@ -1743,7 +2143,21 @@ function tuneToIndex(idx) {
 
   const audio = document.getElementById('audio-player');
   audio.src   = station.url_resolved || station.url;
-  audio.play().catch(() => {});
+  const playPromise = audio.play();
+  if (playPromise !== undefined) {
+    playPromise.catch(() => {
+      // Browser blocked autoplay — play on first user interaction
+      const unlock = () => {
+        audio.play().catch(() => {});
+        document.removeEventListener('click',     unlock);
+        document.removeEventListener('touchstart', unlock);
+        document.removeEventListener('keydown',    unlock);
+      };
+      document.addEventListener('click',     unlock, { once: true });
+      document.addEventListener('touchstart', unlock, { once: true });
+      document.addEventListener('keydown',    unlock, { once: true });
+    });
+  }
 
   updateCRT(station, false);
   updateNowPlaying(station);
@@ -1790,8 +2204,7 @@ function updateNowPlaying(s) {
   document.getElementById('np-name').textContent = s.name || 'Без названия';
   document.getElementById('np-sub').textContent  =
     [s.countrycode, s.language, s.bitrate ? s.bitrate + ' kbps' : ''].filter(Boolean).join(' · ');
-  document.getElementById('now-playing').classList.add('visible');
-  document.body.classList.add('player-visible');
+  setPlayStopBtn(true);
   updateChatShareBtn();
 }
 
@@ -1816,6 +2229,31 @@ function clearTrackMeta() {
   document.getElementById('np-services').classList.remove('visible');
 }
 
+// ─── Play/Stop toggle ─────────────────────────────────────
+function setPlayStopBtn(playing) {
+  const btn = document.getElementById('np-playstop');
+  if (!btn) return;
+  if (playing) {
+    btn.textContent = '■ Стоп';
+    btn.classList.add('is-playing');
+  } else {
+    btn.textContent = '▶ Play';
+    btn.classList.remove('is-playing');
+  }
+}
+
+function togglePlayStop() {
+  const audio = document.getElementById('audio-player');
+  if (!audio.paused && audio.src) {
+    stopStation();
+  } else if (currentStation) {
+    audio.play().catch(() => {});
+    setPlayStopBtn(true);
+  } else if (stations.length) {
+    tuneToIndex(currentIdx);
+  }
+}
+
 // ─── Stop ─────────────────────────────────────────────────
 function stopStation(silent = false) {
   clearTimeout(tuneTimer);
@@ -1828,11 +2266,8 @@ function stopStation(silent = false) {
   crtNoSignal();
   clearTicker();
   updateChatShareBtn();
+  setPlayStopBtn(false);
   document.getElementById('crt-frame').classList.remove('has-link');
-  if (!silent) {
-    document.getElementById('now-playing').classList.remove('visible');
-    document.body.classList.remove('player-visible');
-  }
 }
 
 // ─── Favourites ───────────────────────────────────────────
@@ -1870,12 +2305,15 @@ function toggleFavourite() {
 }
 
 function updateFavBtn() {
-  const btn = document.getElementById('np-fav');
-  if (!btn) return;
   const fav = isFav(currentStation);
-  btn.textContent = fav ? '♥' : '♡';
-  btn.classList.toggle('active', fav);
-  btn.title = fav ? 'Убрать из избранного' : 'В избранное';
+  const label = fav ? 'Убрать из избранного' : 'В избранное';
+  ['np-fav', 'controls-fav'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.textContent = fav ? '♥' : '♡';
+    btn.classList.toggle('active', fav);
+    btn.title = label;
+  });
 }
 
 function updateFavCount() {
@@ -1935,7 +2373,7 @@ function loadFavourites() {
   currentIdx = 0;
   setNeedle(0);
   updateDots(0);
-  document.getElementById('slider-pos').textContent = `1 / ${stations.length}`;
+  updateTunerInfo(0);
 
   setTimeout(() => tuneToIndex(0), 400);
 }
@@ -2089,9 +2527,23 @@ function buildTextMsg(data, isMine) {
   time.className = 'chat-msg-time';
   time.textContent = new Date().toLocaleTimeString('ru', {hour:'2-digit', minute:'2-digit'});
 
-  wrap.appendChild(nick);
+  // Meta row: nick (left) + time (right) — visible on desktop
+  const metaRow = document.createElement('div');
+  metaRow.className = 'chat-msg-meta';
+  metaRow.appendChild(nick);
+  metaRow.appendChild(time);
+
+  // Mobile: nick above, no time in meta
+  const nickMobile = document.createElement('div');
+  nickMobile.className = 'chat-msg-nick chat-msg-nick-mobile';
+  nickMobile.textContent = data.nick || 'anon';
+
+  const timeMobile = document.createElement('div');
+  timeMobile.className = 'chat-msg-time chat-msg-time-mobile';
+  timeMobile.textContent = time.textContent;
+
+  wrap.appendChild(metaRow);
   wrap.appendChild(bubble);
-  wrap.appendChild(time);
   return wrap;
 }
 
@@ -2154,9 +2606,13 @@ function buildStationCard(data, isMine) {
   time.className = 'chat-msg-time';
   time.textContent = new Date().toLocaleTimeString('ru', {hour:'2-digit', minute:'2-digit'});
 
-  wrap.appendChild(nick);
+  const metaRow = document.createElement('div');
+  metaRow.className = 'chat-msg-meta';
+  metaRow.appendChild(nick);
+  metaRow.appendChild(time);
+
+  wrap.appendChild(metaRow);
   wrap.appendChild(card);
-  wrap.appendChild(time);
   return wrap;
 }
 
@@ -2320,6 +2776,9 @@ const _origUpdateNowPlaying = updateNowPlaying;
 
 // ─── Keyboard ─────────────────────────────────────────────
 document.addEventListener('keydown', e => {
+  if (e.key === ' ' && !['INPUT','TEXTAREA'].includes(e.target.tagName)) {
+    e.preventDefault(); togglePlayStop(); return;
+  }
   if (!stations.length) return;
   const slider = document.getElementById('scroll-slider');
   let idx = currentIdx;
@@ -2330,11 +2789,191 @@ document.addEventListener('keydown', e => {
   const pct = (idx / Math.max(stations.length - 1, 1)) * 100;
   slider.value = pct;
   setNeedle(pct);
-  document.getElementById('slider-pos').textContent = `${idx + 1} / ${stations.length}`;
+  updateTunerInfo(idx);
   updateDots(idx);
   updateCRT(stations[idx], false);
   tuneToIndex(idx);
 });
+
+// ─── Header panels ────────────────────────────────────────
+const PANELS = ['skin-panel','lang-panel','menu-panel'];
+const BTNS   = ['skin-btn','lang-btn','menu-btn'];
+
+function closeAllPanels() {
+  PANELS.forEach(id => document.getElementById(id)?.classList.remove('open'));
+  BTNS.forEach(id => document.getElementById(id)?.classList.remove('active'));
+}
+function togglePanel(panelId, btnId) {
+  const wasOpen = document.getElementById(panelId)?.classList.contains('open');
+  closeAllPanels();
+  if (!wasOpen) {
+    document.getElementById(panelId)?.classList.add('open');
+    document.getElementById(btnId)?.classList.add('active');
+  }
+}
+function toggleSkinPanel() { togglePanel('skin-panel','skin-btn'); }
+function toggleLangPanel()  { togglePanel('lang-panel','lang-btn'); }
+function toggleMenuPanel()  { togglePanel('menu-panel','menu-btn'); }
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.header-btns')) closeAllPanels();
+});
+
+// ─── Skins ────────────────────────────────────────────────
+const SKIN_KEY = 'radiowaveSkin';
+const SKINS = {
+  dark:  { '--accent':'#00e5ff','--accent2':'#ff3cac','--accent3':'#ffcc00',
+           '--bg':'#080b12','--bg2':'#0d1220','--surface':'#111827','--border':'#1e2d45',
+           '--text':'#cdd6f4','--muted':'#4a5568' },
+  light: { '--accent':'#0077cc','--accent2':'#e0006a','--accent3':'#d17000',
+           '--bg':'#f0f4f8','--bg2':'#e4eaf2','--surface':'#ffffff','--border':'#c8d4e0',
+           '--text':'#1a2540','--muted':'#7a8aaa' },
+  neon:  { '--accent':'#ff00ff','--accent2':'#00ffcc','--accent3':'#ffff00',
+           '--bg':'#080010','--bg2':'#10011a','--surface':'#140820','--border':'#2d1050',
+           '--text':'#f0e0ff','--muted':'#5a3a7a' },
+  retro: { '--accent':'#33ff33','--accent2':'#ffaa00','--accent3':'#ffdd00',
+           '--bg':'#000800','--bg2':'#001200','--surface':'#001800','--border':'#003300',
+           '--text':'#88ff88','--muted':'#2a5a2a' },
+};
+function setSkin(name) {
+  const skin = SKINS[name]; if (!skin) return;
+  const root = document.documentElement;
+  Object.entries(skin).forEach(([k,v]) => root.style.setProperty(k,v));
+  localStorage.setItem(SKIN_KEY, name);
+  document.documentElement.classList.toggle('skin-light', name === 'light');
+  document.querySelectorAll('.skin-item').forEach(el => el.classList.toggle('active', el.dataset.skin === name));
+  closeAllPanels();
+}
+function loadSkin() { setSkin(localStorage.getItem(SKIN_KEY) || 'dark'); }
+
+// ─── i18n ─────────────────────────────────────────────────
+const LANG_KEY = 'radiowaveLang';
+const I18N = {
+  ru: {
+    skins:'СКИНЫ', skin_dark:'Тёмный', skin_light:'Светлый', skin_neon:'Неон', skin_retro:'Ретро',
+    menu:'МЕНЮ', menu_settings:'Настройки', menu_hotkeys:'Горячие клавиши', menu_about:'О проекте',
+    modal_settings:'Настройки', modal_hotkeys:'Горячие клавиши', modal_about:'О проекте',
+    fav_label:'Избранное', tag_edit_title:'Редактор тегов',
+    open_site:'открыть сайт ↗', freq_label:'⬤ Частота', menu_clear_confirm:'Очистить избранное?',
+    chat_placeholder:'Сообщение...', nick_placeholder:'Ник',
+    hk_prev:'Предыдущая станция', hk_next:'Следующая станция', hk_play:'Play / Стоп',
+    about_desc:'Онлайн-радио плеер на основе открытой базы данных radio-browser.info. Более 30 000 станций по всему миру.',
+    btn_clear:'Очистить',
+  },
+  en: {
+    skins:'SKINS', skin_dark:'Dark', skin_light:'Light', skin_neon:'Neon', skin_retro:'Retro',
+    menu:'MENU', menu_settings:'Settings', menu_hotkeys:'Hotkeys', menu_about:'About',
+    modal_settings:'Settings', modal_hotkeys:'Keyboard Shortcuts', modal_about:'About',
+    fav_label:'Favourites', tag_edit_title:'Tag Editor',
+    open_site:'open site ↗', freq_label:'⬤ Frequency', menu_clear_confirm:'Clear favourites?',
+    chat_placeholder:'Message...', nick_placeholder:'Nick',
+    hk_prev:'Previous station', hk_next:'Next station', hk_play:'Play / Stop',
+    about_desc:'Online radio player powered by the open radio-browser.info database. Over 30,000 stations worldwide.',
+    btn_clear:'Clear',
+  },
+  de: {
+    skins:'SKINS', skin_dark:'Dunkel', skin_light:'Hell', skin_neon:'Neon', skin_retro:'Retro',
+    menu:'MENÜ', menu_settings:'Einstellungen', menu_hotkeys:'Tastenkürzel', menu_about:'Über das Projekt',
+    modal_settings:'Einstellungen', modal_hotkeys:'Tastenkürzel', modal_about:'Über das Projekt',
+    fav_label:'Favoriten', tag_edit_title:'Tag-Editor',
+    open_site:'Website öffnen ↗', freq_label:'⬤ Frequenz', menu_clear_confirm:'Favoriten löschen?',
+    chat_placeholder:'Nachricht...', nick_placeholder:'Nick',
+    hk_prev:'Vorherige Station', hk_next:'Nächste Station', hk_play:'Play / Stopp',
+    about_desc:'Online-Radioplayer auf Basis der offenen Datenbank radio-browser.info. Über 30.000 Sender weltweit.',
+    btn_clear:'Löschen',
+  },
+  fr: {
+    skins:'THÈMES', skin_dark:'Sombre', skin_light:'Clair', skin_neon:'Néon', skin_retro:'Rétro',
+    menu:'MENU', menu_settings:'Paramètres', menu_hotkeys:'Raccourcis', menu_about:'À propos',
+    modal_settings:'Paramètres', modal_hotkeys:'Raccourcis clavier', modal_about:'À propos',
+    fav_label:'Favoris', tag_edit_title:'Éditeur de tags',
+    open_site:'ouvrir le site ↗', freq_label:'⬤ Fréquence', menu_clear_confirm:'Effacer les favoris ?',
+    chat_placeholder:'Message...', nick_placeholder:'Pseudo',
+    hk_prev:'Station précédente', hk_next:'Station suivante', hk_play:'Play / Stop',
+    about_desc:'Lecteur radio en ligne basé sur radio-browser.info. Plus de 30 000 stations dans le monde.',
+    btn_clear:'Effacer',
+  },
+  es: {
+    skins:'TEMAS', skin_dark:'Oscuro', skin_light:'Claro', skin_neon:'Neón', skin_retro:'Retro',
+    menu:'MENÚ', menu_settings:'Configuración', menu_hotkeys:'Atajos', menu_about:'Acerca de',
+    modal_settings:'Configuración', modal_hotkeys:'Atajos de teclado', modal_about:'Acerca de',
+    fav_label:'Favoritos', tag_edit_title:'Editor de etiquetas',
+    open_site:'abrir sitio ↗', freq_label:'⬤ Frecuencia', menu_clear_confirm:'¿Borrar favoritos?',
+    chat_placeholder:'Mensaje...', nick_placeholder:'Nick',
+    hk_prev:'Estación anterior', hk_next:'Estación siguiente', hk_play:'Play / Parar',
+    about_desc:'Reproductor de radio en línea basado en radio-browser.info. Más de 30.000 estaciones.',
+    btn_clear:'Borrar',
+  },
+};
+let currentLang = 'ru';
+function t(key) { return (I18N[currentLang] || I18N.ru)[key] || key; }
+
+function applyLang() {
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  const favLabel = document.getElementById('fav-btn-label');
+  if (favLabel) favLabel.textContent = t('fav_label');
+  document.querySelectorAll('.chat-text-input').forEach(el => el.placeholder = t('chat_placeholder'));
+  document.querySelectorAll('.chat-nick-input').forEach(el => el.placeholder = t('nick_placeholder'));
+  const crtHint = document.getElementById('crt-link-hint');
+  if (crtHint) crtHint.textContent = t('open_site');
+  const tunerLabel = document.querySelector('.tuner-label');
+  if (tunerLabel) tunerLabel.textContent = t('freq_label');
+  const langBtn = document.getElementById('lang-btn');
+  if (langBtn) langBtn.textContent = ({ru:'RU',en:'EN',de:'DE',fr:'FR',es:'ES'})[currentLang] || 'RU';
+  document.querySelectorAll('.lang-item').forEach(el => el.classList.toggle('active', el.dataset.lang === currentLang));
+}
+function setLang(lang) { currentLang = lang; localStorage.setItem(LANG_KEY, lang); applyLang(); closeAllPanels(); }
+function loadLang() { currentLang = localStorage.getItem(LANG_KEY) || 'ru'; applyLang(); }
+
+// ─── Info modals ──────────────────────────────────────────
+function openInfoModal(type) {
+  const overlay = document.getElementById('info-modal-overlay');
+  const title   = document.getElementById('info-modal-title');
+  const body    = document.getElementById('info-modal-body');
+  if (type === 'settings') {
+    title.textContent = t('modal_settings');
+    body.innerHTML = `
+      <div class="settings-row">
+        <div><div class="settings-label">${t('tag_edit_title')}</div><div class="settings-desc">radio-browser tags</div></div>
+        <button class="settings-action" onclick="closeInfoModal();openTagEditor()">${t('tag_edit_title')}</button>
+      </div>
+      <div class="settings-row">
+        <div><div class="settings-label">${t('fav_label')}</div><div class="settings-desc">localStorage</div></div>
+        <button class="settings-action" onclick="closeInfoModal();loadFavourites()">${t('fav_label')}</button>
+      </div>
+      <div class="settings-row">
+        <div><div class="settings-label">${t('menu_clear_confirm').replace('?','').replace('¿','')}</div><div class="settings-desc">—</div></div>
+        <button class="settings-action danger" onclick="closeInfoModal();clearFavsConfirm()">${t('btn_clear')}</button>
+      </div>`;
+  } else if (type === 'hotkeys') {
+    title.textContent = t('modal_hotkeys');
+    body.innerHTML = `<table class="hotkey-table">
+      <tr><td><span class="hotkey-kbd">←</span></td><td class="hotkey-desc">${t('hk_prev')}</td></tr>
+      <tr><td><span class="hotkey-kbd">→</span></td><td class="hotkey-desc">${t('hk_next')}</td></tr>
+      <tr><td><span class="hotkey-kbd">Space</span></td><td class="hotkey-desc">${t('hk_play')}</td></tr>
+    </table>`;
+  } else if (type === 'about') {
+    title.textContent = t('modal_about');
+    body.innerHTML = `
+      <div class="about-logo">RADIO//WAVE</div>
+      <div class="about-ver">v1.7 · radio-browser.info</div>
+      <div class="about-text">${t('about_desc')}</div>
+      <div class="about-links">
+        <a class="about-link" href="https://www.radio-browser.info" target="_blank" rel="noopener">📡 Radio Browser</a>
+        <a class="about-link" href="https://github.com/segler-alex/radiobrowser-api" target="_blank" rel="noopener">🔗 API</a>
+      </div>`;
+  }
+  overlay.classList.add('open');
+}
+function closeInfoModal() { document.getElementById('info-modal-overlay')?.classList.remove('open'); }
+function onInfoOverlayClick(e) { if (e.target === document.getElementById('info-modal-overlay')) closeInfoModal(); }
+
+function clearFavsConfirm() {
+  if (confirm(t('menu_clear_confirm'))) {
+    saveFavs([]); updateFavCount();
+    showFavToast('🗑 ' + t('menu_clear_confirm').replace('?','').replace('¿',''));
+  }
+}
 </script>
 </body>
 </html>
