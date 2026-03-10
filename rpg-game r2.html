@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RADIO//WAVE — RPG</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:#080b12; --bg2:#0d1220; --surface:#111827; --border:#1e2d45;
+  --accent:#00e5ff; --accent2:#ff3cac; --accent3:#ffcc00;
+  --text:#cdd6f4; --muted:#4a5568;
+  --font-head:'Orbitron',monospace; --font-body:'Rajdhani',sans-serif;
+}
+html,body{height:100%;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:15px;overflow-x:hidden;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;top:-200px;left:-200px;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(0,229,255,0.07) 0%,transparent 70%);pointer-events:none;z-index:0;}
+.blob2{position:fixed;bottom:-200px;right:-200px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(255,60,172,0.06) 0%,transparent 70%);pointer-events:none;z-index:0;}
+.wrap{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:20px 16px 40px;}
+
+header{padding:18px 0 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);margin-bottom:24px;}
+.logo{font-family:var(--font-head);font-size:1.1rem;font-weight:900;letter-spacing:0.12em;color:var(--accent);text-shadow:0 0 20px rgba(0,229,255,0.5);display:flex;align-items:center;gap:8px;}
+.logo-sub{font-size:0.55rem;color:var(--muted);letter-spacing:0.18em;display:block;margin-top:2px;}
+
+/* Back btn — fav-btn style */
+.back-btn{
+  background:transparent;border:1px solid rgba(255,60,172,0.4);color:var(--accent2);
+  font-family:var(--font-head);font-size:0.6rem;letter-spacing:0.1em;
+  padding:8px 18px;border-radius:8px;cursor:pointer;transition:all 0.2s;
+  display:flex;align-items:center;gap:6px;box-shadow:0 0 10px rgba(255,60,172,0.08);
+}
+.back-btn:hover{background:rgba(255,60,172,0.1);box-shadow:0 0 16px rgba(255,60,172,0.3);border-color:var(--accent2);}
+
+.screen{display:none;}.screen.active{display:block;}
+.screen-title{font-family:var(--font-head);font-size:1.4rem;font-weight:900;color:var(--accent);letter-spacing:0.1em;text-align:center;text-shadow:0 0 30px rgba(0,229,255,0.4);margin-bottom:6px;}
+.screen-sub{text-align:center;color:var(--muted);font-size:0.72rem;letter-spacing:0.12em;font-family:var(--font-head);margin-bottom:20px;}
+
+.intro-story{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 22px;margin-bottom:24px;font-size:0.78rem;color:var(--text);line-height:1.9;text-align:center;}
+.intro-story strong{color:var(--accent);font-family:var(--font-head);font-size:0.65rem;letter-spacing:0.1em;}
+
+.player-count-row{display:flex;justify-content:center;gap:12px;margin-bottom:24px;}
+.pcount-btn{font-family:var(--font-head);font-size:0.7rem;letter-spacing:0.1em;border:1px solid var(--border);background:transparent;color:var(--muted);padding:10px 28px;border-radius:8px;cursor:pointer;transition:all 0.2s;}
+.pcount-btn.active,.pcount-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,0.06);box-shadow:0 0 14px rgba(0,229,255,0.15);}
+
+.players-setup{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-bottom:28px;}
+.player-card{flex:1;min-width:240px;max-width:360px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;}
+.player-label{font-family:var(--font-head);font-size:0.58rem;color:var(--muted);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:10px;}
+.name-input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-head);font-size:0.68rem;letter-spacing:0.08em;padding:9px 14px;outline:none;margin-bottom:14px;transition:border-color 0.2s;}
+.name-input:focus{border-color:var(--accent);}
+.class-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.class-btn{background:transparent;border:1px solid var(--border);border-radius:8px;padding:10px 8px;cursor:pointer;transition:all 0.2s;text-align:center;}
+.class-btn:hover{border-color:rgba(0,229,255,0.4);background:rgba(0,229,255,0.04);}
+.class-btn.selected{border-color:var(--accent);background:rgba(0,229,255,0.08);box-shadow:0 0 12px rgba(0,229,255,0.15);}
+.class-icon{font-size:1.4rem;display:block;margin-bottom:4px;}
+.class-name{font-family:var(--font-head);font-size:0.56rem;color:var(--text);letter-spacing:0.08em;display:block;}
+.class-desc{font-size:0.58rem;color:var(--muted);display:block;margin-top:2px;line-height:1.3;}
+
+.start-btn{display:block;margin:0 auto;font-family:var(--font-head);font-size:0.75rem;letter-spacing:0.14em;border:1px solid var(--accent);background:transparent;color:var(--accent);padding:14px 48px;border-radius:8px;cursor:pointer;transition:all 0.2s;box-shadow:0 0 20px rgba(0,229,255,0.1);margin-bottom:24px;}
+.start-btn:hover{background:rgba(0,229,255,0.1);box-shadow:0 0 30px rgba(0,229,255,0.3);transform:scale(1.02);}
+
+/* GAME */
+.game-layout{display:flex;flex-direction:column;gap:14px;}
+.dungeon-progress{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;}
+.dp-dot{width:10px;height:10px;border-radius:50%;border:1px solid var(--border);background:transparent;}
+.dp-dot.done{background:var(--muted);border-color:var(--muted);}
+.dp-dot.current{background:var(--accent2);border-color:var(--accent2);box-shadow:0 0 6px rgba(255,60,172,0.5);animation:bpulse 1s infinite;}
+.dp-dot.miniboss{border-color:var(--accent3);}
+.dp-dot.miniboss.done{background:var(--accent3);}
+.dp-dot.boss-dot{border-color:var(--accent2);}
+.dp-dot.boss-dot.done{background:var(--accent2);}
+@keyframes bpulse{0%,100%{box-shadow:0 0 0 rgba(255,60,172,0)}50%{box-shadow:0 0 10px rgba(255,60,172,0.5)}}
+
+.enemy-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;position:relative;overflow:hidden;}
+.enemy-block::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(255,60,172,0.07) 0%,transparent 70%);pointer-events:none;}
+.enemy-label{font-family:var(--font-head);font-size:0.52rem;color:var(--muted);letter-spacing:0.18em;margin-bottom:4px;}
+.enemy-name{font-family:var(--font-head);font-size:1.3rem;font-weight:900;color:var(--accent2);letter-spacing:0.08em;text-shadow:0 0 20px rgba(255,60,172,0.5);margin-bottom:12px;}
+.enemy-emoji{font-size:2.8rem;display:block;margin-bottom:10px;filter:drop-shadow(0 0 10px rgba(255,60,172,0.4));}
+.enemy-type-badge{display:inline-block;font-family:var(--font-head);font-size:0.5rem;letter-spacing:0.14em;padding:3px 10px;border-radius:4px;margin-bottom:12px;}
+.badge-mob{border:1px solid var(--muted);color:var(--muted);}
+.badge-miniboss{border:1px solid var(--accent3);color:var(--accent3);background:rgba(255,204,0,0.06);}
+.badge-boss{border:1px solid var(--accent2);color:var(--accent2);background:rgba(255,60,172,0.08);animation:bpulse 2s ease-in-out infinite;}
+
+.hp-bar-wrap{margin-bottom:6px;}
+.hp-bar-label{display:flex;justify-content:space-between;font-family:var(--font-head);font-size:0.55rem;color:var(--muted);letter-spacing:0.08em;margin-bottom:4px;}
+.hp-bar-track{height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;border:1px solid var(--border);}
+.hp-bar-fill{height:100%;border-radius:4px;transition:width 0.4s ease;}
+.hp-fill-enemy{background:linear-gradient(90deg,var(--accent2),#ff6b9d);box-shadow:0 0 8px rgba(255,60,172,0.4);}
+.hp-fill-player{background:linear-gradient(90deg,var(--accent),#7fefff);box-shadow:0 0 6px rgba(0,229,255,0.3);}
+.hp-fill-low{background:linear-gradient(90deg,#ff4400,#ff8800)!important;box-shadow:0 0 8px rgba(255,68,0,0.5)!important;}
+.xp-fill{background:linear-gradient(90deg,var(--accent3),#ffe066);box-shadow:0 0 6px rgba(255,204,0,0.3);}
+.mana-fill{background:linear-gradient(90deg,#7b44ff,#b87fff)!important;box-shadow:0 0 6px rgba(123,68,255,0.4)!important;}
+
+.players-row{display:flex;gap:12px;flex-wrap:wrap;}
+.player-battle-card{flex:1;min-width:200px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;transition:border-color 0.3s;}
+.player-battle-card.active-turn{border-color:var(--accent);box-shadow:0 0 16px rgba(0,229,255,0.15);}
+.player-battle-card.dead{opacity:0.4;}
+.pb-name{font-family:var(--font-head);font-size:0.65rem;font-weight:700;color:var(--accent);letter-spacing:0.1em;margin-bottom:2px;}
+.pb-level{font-family:var(--font-head);font-size:0.52rem;color:var(--accent3);letter-spacing:0.1em;margin-bottom:4px;}
+.pb-class{font-family:var(--font-head);font-size:0.5rem;color:var(--muted);letter-spacing:0.1em;margin-bottom:8px;}
+.pb-stats{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.pb-stat{font-family:var(--font-head);font-size:0.5rem;color:var(--muted);letter-spacing:0.06em;}
+.pb-stat span{color:var(--accent3);}
+
+.turn-indicator{font-family:var(--font-head);font-size:0.6rem;letter-spacing:0.12em;color:var(--accent);text-align:center;padding:6px;animation:blink-t 1.2s ease-in-out infinite;}
+@keyframes blink-t{0%,100%{opacity:1}50%{opacity:0.4}}
+
+.boss-warning{background:rgba(255,60,172,0.08);border:1px solid rgba(255,60,172,0.3);border-radius:8px;padding:10px 14px;text-align:center;font-family:var(--font-head);font-size:0.6rem;color:var(--accent2);letter-spacing:0.1em;animation:bpulse 1.5s ease-in-out infinite;}
+
+.actions-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;}
+.actions-title{font-family:var(--font-head);font-size:0.55rem;color:var(--muted);letter-spacing:0.14em;margin-bottom:12px;}
+.actions-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;}
+.action-btn{background:transparent;border:1px solid var(--border);border-radius:8px;padding:10px 8px;cursor:pointer;transition:all 0.18s;text-align:left;display:flex;flex-direction:column;gap:3px;}
+.action-btn:hover:not(:disabled){border-color:var(--accent);background:rgba(0,229,255,0.05);}
+.action-btn:disabled{opacity:0.35;cursor:default;}
+.skill-btn{border-color:rgba(255,204,0,0.25);}
+.skill-btn:hover:not(:disabled){border-color:var(--accent3)!important;background:rgba(255,204,0,0.05)!important;}
+.item-btn{border-color:rgba(68,255,136,0.3);}
+.item-btn:hover:not(:disabled){border-color:#44ff88!important;background:rgba(68,255,136,0.05)!important;}
+.action-icon{font-size:1.1rem;}
+.action-name{font-family:var(--font-head);font-size:0.58rem;color:var(--text);letter-spacing:0.06em;}
+.action-hint{font-size:0.55rem;color:var(--muted);line-height:1.3;}
+.cd-badge{font-family:var(--font-head);font-size:0.48rem;color:var(--accent2);margin-top:2px;}
+
+.battle-log{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;height:180px;overflow-y:auto;font-size:0.68rem;line-height:1.7;scroll-behavior:smooth;}
+.battle-log::-webkit-scrollbar{width:4px;}
+.battle-log::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.log-line{padding:1px 0;border-bottom:1px solid rgba(255,255,255,0.03);}
+.log-dmg{color:var(--accent2);font-weight:600;}
+.log-crit{color:var(--accent3);font-weight:700;}
+.log-heal{color:#44ff88;}
+.log-miss{color:var(--muted);font-style:italic;}
+.log-event{color:var(--accent);}
+.log-enemy{color:var(--accent2);}
+.log-boss{color:var(--accent3);font-weight:700;}
+.log-dead{color:#ff4444;}
+.log-win{color:#44ff88;font-weight:700;}
+.log-loot{color:#aaffcc;}
+.log-lvl{color:var(--accent3);font-weight:700;}
+
+/* Level-up modal */
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(4,6,14,0.92);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.25s;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;width:min(480px,92vw);padding:28px;box-shadow:0 20px 60px rgba(0,0,0,0.7),0 0 40px rgba(255,204,0,0.1);}
+.modal-title{font-family:var(--font-head);font-size:1rem;font-weight:900;color:var(--accent3);text-align:center;letter-spacing:0.1em;text-shadow:0 0 20px rgba(255,204,0,0.5);margin-bottom:6px;}
+.modal-sub{font-family:var(--font-head);font-size:0.55rem;color:var(--muted);text-align:center;letter-spacing:0.12em;margin-bottom:20px;}
+.stat-choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.stat-choice{background:transparent;border:1px solid var(--border);border-radius:10px;padding:14px 10px;cursor:pointer;transition:all 0.2s;text-align:center;}
+.stat-choice:hover{border-color:var(--accent3);background:rgba(255,204,0,0.07);box-shadow:0 0 16px rgba(255,204,0,0.15);}
+.sc-icon{font-size:1.6rem;display:block;margin-bottom:6px;}
+.sc-name{font-family:var(--font-head);font-size:0.65rem;color:var(--text);letter-spacing:0.08em;display:block;margin-bottom:4px;}
+.sc-desc{font-size:0.6rem;color:var(--muted);line-height:1.4;}
+
+/* Results */
+.results-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:600px;margin:0 auto;}
+.result-title{font-family:var(--font-head);font-size:1.2rem;font-weight:900;color:var(--accent3);text-align:center;letter-spacing:0.1em;text-shadow:0 0 24px rgba(255,204,0,0.5);margin-bottom:6px;}
+.result-sub{font-family:var(--font-head);font-size:0.58rem;color:var(--muted);text-align:center;letter-spacing:0.12em;margin-bottom:24px;}
+.result-player{margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+.result-player:last-child{border-bottom:none;margin-bottom:0;}
+.result-pname{font-family:var(--font-head);font-size:0.75rem;font-weight:700;color:var(--accent);letter-spacing:0.1em;margin-bottom:10px;}
+.result-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.result-stat{background:var(--bg2);border-radius:6px;padding:10px 12px;}
+.result-stat-label{font-family:var(--font-head);font-size:0.5rem;color:var(--muted);letter-spacing:0.1em;margin-bottom:3px;}
+.result-stat-val{font-family:var(--font-head);font-size:0.95rem;font-weight:700;color:var(--accent3);}
+.result-time{font-family:var(--font-head);font-size:0.6rem;color:var(--muted);text-align:center;margin:16px 0 20px;letter-spacing:0.1em;}
+.result-time span{color:var(--accent);}
+
+.enemy-block.defeated{animation:def-flash 0.5s ease;}
+@keyframes def-flash{0%{background:rgba(255,60,172,0.2)}100%{background:var(--surface)}}
+
+.skin-light body::before{background-image:linear-gradient(rgba(0,119,204,0.06) 1px,transparent 1px),linear-gradient(90deg,rgba(0,119,204,0.06) 1px,transparent 1px);}
+
+/* ── Header controls ──────────────────────────────────── */
+.hdr-right{display:flex;align-items:center;gap:8px;position:relative;}
+.hdr-btn{background:transparent;border:1px solid var(--border);color:var(--muted);font-size:0.85rem;width:34px;height:34px;border-radius:6px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--font-head);letter-spacing:0.06em;}
+.hdr-btn:hover,.hdr-btn.active{border-color:var(--accent);color:var(--accent);box-shadow:0 0 10px rgba(0,229,255,0.15);}
+.hdr-btn-lang{font-size:0.6rem;font-weight:700;letter-spacing:0.1em;color:var(--accent);border-color:rgba(0,229,255,0.3);width:auto;padding:0 10px;}
+.hdr-panel{position:absolute;top:calc(100% + 10px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;min-width:180px;box-shadow:0 12px 40px rgba(0,0,0,0.6),0 0 20px rgba(0,229,255,0.06);z-index:200;display:none;overflow:hidden;animation:panelIn 0.15s ease;}
+.hdr-panel.open{display:block;}
+@keyframes panelIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+.hdr-panel-title{font-family:var(--font-head);font-size:0.52rem;color:var(--muted);letter-spacing:0.14em;text-transform:uppercase;padding:10px 14px 8px;border-bottom:1px solid var(--border);}
+.skin-list{padding:10px;display:flex;flex-direction:column;gap:4px;}
+.skin-item{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:6px;cursor:pointer;font-family:var(--font-head);font-size:0.6rem;color:var(--muted);letter-spacing:0.08em;transition:background 0.15s,color 0.15s;text-transform:uppercase;}
+.skin-item:hover{background:rgba(0,229,255,0.06);color:var(--text);}
+.skin-item.active{color:var(--accent);background:rgba(0,229,255,0.08);}
+.skin-preview{width:26px;height:18px;border-radius:4px;border:1px solid var(--border);flex-shrink:0;}
+.lang-list{padding:8px;display:flex;flex-direction:column;gap:2px;}
+.lang-item{padding:8px 10px;border-radius:6px;cursor:pointer;font-family:var(--font-head);font-size:0.62rem;color:var(--muted);letter-spacing:0.06em;transition:background 0.15s,color 0.15s;}
+.lang-item:hover{background:rgba(0,229,255,0.06);color:var(--text);}
+.lang-item.active{color:var(--accent);background:rgba(0,229,255,0.08);}
+
+/* ── Radio soundbar ───────────────────────────────────── */
+body{padding-bottom:70px;}
+.radio-bar{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(180deg,rgba(8,11,18,0) 0%,rgba(8,11,18,0.98) 28%);padding:10px 20px 14px;display:flex;align-items:center;gap:12px;z-index:100;backdrop-filter:blur(10px);border-top:1px solid var(--border);}
+.rb-eq{display:flex;align-items:flex-end;gap:3px;height:20px;flex-shrink:0;}
+.rb-bar{width:3px;background:var(--accent);border-radius:2px;animation:eq 0.8s ease-in-out infinite alternate;box-shadow:0 0 4px var(--accent);}
+.rb-bar:nth-child(1){animation-delay:0s;animation-duration:0.7s;}
+.rb-bar:nth-child(2){animation-delay:0.15s;animation-duration:0.9s;}
+.rb-bar:nth-child(3){animation-delay:0.3s;animation-duration:0.6s;}
+.rb-bar:nth-child(4){animation-delay:0.1s;animation-duration:1.0s;}
+@keyframes eq{from{height:3px;}to{height:18px;}}
+.rb-eq.paused .rb-bar{animation-play-state:paused;height:5px;}
+.rb-info{flex:1;min-width:0;}
+.rb-name{font-family:var(--font-head);font-size:0.7rem;font-weight:700;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0.05em;}
+.rb-sub{font-size:0.58rem;color:var(--muted);margin-top:1px;}
+.rb-playstop{background:transparent;border:1px solid rgba(255,60,172,0.4);color:var(--accent2);font-family:var(--font-head);font-size:0.58rem;letter-spacing:0.1em;padding:7px 14px;border-radius:4px;cursor:pointer;text-transform:uppercase;transition:all 0.2s;flex-shrink:0;white-space:nowrap;}
+.rb-playstop:hover{background:rgba(255,60,172,0.1);box-shadow:0 0 12px rgba(255,60,172,0.3);}
+.rb-playstop.is-playing{border-color:rgba(0,229,255,0.4);color:var(--accent);}
+.rb-playstop.is-playing:hover{background:rgba(0,229,255,0.1);box-shadow:0 0 12px rgba(0,229,255,0.3);}
+
+@media(max-width:600px){
+  .players-row,.stat-choices,.result-stats{grid-template-columns:1fr;}
+  .players-row{flex-direction:column;}
+  .actions-grid{grid-template-columns:1fr 1fr;}
+  .results-block{padding:16px;}
+  .rb-sub{display:none;}
+}
+</style>
+</head>
+<body>
+<div class="blob2"></div>
+<div class="wrap">
+  <header>
+    <div class="logo"><span>📻</span><div>RADIO//WAVE<span class="logo-sub">⚔ DUNGEON</span></div></div>
+    <div class="hdr-right">
+      <button class="hdr-btn" id="skin-btn" onclick="toggleSkinPanel()" title="Скины">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.37 2.63 14 7l-1.59-1.59a2 2 0 0 0-2.82 0L8 7l9 9 1.59-1.59a2 2 0 0 0 0-2.82L17 10l4.37-4.37a2.12 2.12 0 1 0-3-3Z"/><path d="M9 8c-2 3-4 3.5-7 4l8 10c2-1 6-5 6-7"/><path d="M14.5 17.5 4.5 15"/></svg>
+      </button>
+      <button class="hdr-btn hdr-btn-lang" id="lang-btn" onclick="toggleLangPanel()">RU</button>
+      <button class="back-btn" onclick="window.history.back()">♥ <span data-i18n="back_site">На сайт</span></button>
+
+      <!-- Skin panel -->
+      <div class="hdr-panel" id="skin-panel">
+        <div class="hdr-panel-title" data-i18n="skins">СКИНЫ</div>
+        <div class="skin-list">
+          <div class="skin-item active" data-skin="dark" onclick="setSkin('dark')"><div class="skin-preview" style="background:linear-gradient(135deg,#080b12 40%,#00e5ff55)"></div><span data-i18n="skin_dark">Тёмный</span></div>
+          <div class="skin-item" data-skin="light" onclick="setSkin('light')"><div class="skin-preview" style="background:linear-gradient(135deg,#f0f4f8 40%,#0077cc55)"></div><span data-i18n="skin_light">Светлый</span></div>
+          <div class="skin-item" data-skin="neon" onclick="setSkin('neon')"><div class="skin-preview" style="background:linear-gradient(135deg,#080010 40%,#ff00ff66)"></div><span data-i18n="skin_neon">Неон</span></div>
+          <div class="skin-item" data-skin="retro" onclick="setSkin('retro')"><div class="skin-preview" style="background:linear-gradient(135deg,#000800 40%,#33ff3366)"></div><span data-i18n="skin_retro">Ретро</span></div>
+          <div class="skin-item" data-skin="sunset" onclick="setSkin('sunset')"><div class="skin-preview" style="background:linear-gradient(135deg,#0f0810 40%,#ff6b3566)"></div><span data-i18n="skin_sunset">Закат</span></div>
+          <div class="skin-item" data-skin="deep" onclick="setSkin('deep')"><div class="skin-preview" style="background:linear-gradient(135deg,#020c1b 40%,#38bdf866)"></div><span data-i18n="skin_deep">Глубина</span></div>
+          <div class="skin-item" data-skin="ash" onclick="setSkin('ash')"><div class="skin-preview" style="background:linear-gradient(135deg,#111316 40%,#a8b2c066)"></div><span data-i18n="skin_ash">Пепел</span></div>
+        </div>
+      </div>
+
+      <!-- Language panel -->
+      <div class="hdr-panel" id="lang-panel">
+        <div class="hdr-panel-title">LANGUAGE</div>
+        <div class="lang-list">
+          <div class="lang-item" data-lang="ru" onclick="setLang('ru')">🇷🇺 Русский</div>
+          <div class="lang-item" data-lang="en" onclick="setLang('en')">🇬🇧 English</div>
+          <div class="lang-item" data-lang="de" onclick="setLang('de')">🇩🇪 Deutsch</div>
+          <div class="lang-item" data-lang="fr" onclick="setLang('fr')">🇫🇷 Français</div>
+          <div class="lang-item" data-lang="es" onclick="setLang('es')">🇪🇸 Español</div>
+          <div class="lang-item" data-lang="ja" onclick="setLang('ja')">🇯🇵 日本語</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="screen active" id="screen-setup">
+    <div class="screen-title" data-i18n="setup_title">⚔ DUNGEON CRAWLER</div>
+    <div class="screen-sub" data-i18n="setup_sub">ПОШАГОВАЯ РПГ · ВЫБЕРИТЕ РЕЖИМ</div>
+    <div class="player-count-row">
+      <button class="pcount-btn active" id="btn-1p" onclick="setPlayerCount(1)" data-i18n="btn_1p">⚔ ОДИН ИГРОК</button>
+      <button class="pcount-btn" id="btn-2p" onclick="setPlayerCount(2)" data-i18n="btn_2p">⚔⚔ ДВА ИГРОКА</button>
+    </div>
+    <div class="players-setup" id="players-setup"></div>
+    <button class="start-btn" onclick="startGame()" data-i18n="btn_start">▶ НАЧАТЬ ИГРУ</button>
+  </div>
+
+  <div class="screen" id="screen-intro">
+    <div class="screen-title" data-i18n="intro_title">📜 ЗАВЯЗКА</div>
+    <div id="intro-text" class="intro-story"></div>
+    <button class="start-btn" onclick="enterDungeon()" data-i18n="btn_dungeon">⚔ В ПОДЗЕМЕЛЬЕ</button>
+  </div>
+
+  <div class="screen" id="screen-game">
+    <div class="game-layout">
+      <div class="dungeon-progress" id="dungeon-progress"></div>
+      <div id="boss-warning" class="boss-warning" style="display:none"></div>
+      <div class="enemy-block" id="enemy-block">
+        <div class="enemy-label" id="enemy-label-el" data-i18n="enemy_label">ПРОТИВНИК</div>
+        <span class="enemy-emoji" id="enemy-emoji">👹</span>
+        <div class="enemy-type-badge badge-mob" id="enemy-badge">MOB</div>
+        <div class="enemy-name" id="enemy-name">—</div>
+        <div class="hp-bar-wrap">
+          <div class="hp-bar-label"><span>HP</span><span id="enemy-hp-text">—</span></div>
+          <div class="hp-bar-track"><div class="hp-bar-fill hp-fill-enemy" id="enemy-hp-bar" style="width:100%"></div></div>
+        </div>
+      </div>
+      <div class="players-row" id="players-row"></div>
+      <div class="turn-indicator" id="turn-indicator">ХОД: —</div>
+      <div class="actions-block">
+        <div class="actions-title" id="actions-title" data-i18n="actions_label">ДЕЙСТВИЯ</div>
+        <div class="actions-grid" id="actions-grid"></div>
+      </div>
+      <div class="battle-log" id="battle-log"></div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-results">
+    <div class="result-title" id="result-title">🏆 ПОБЕДА!</div>
+    <div class="result-sub" id="result-sub"></div>
+    <div class="results-block">
+      <div id="results-body"></div>
+      <div class="result-time" id="result-time"></div>
+      <button class="start-btn" onclick="resetGame()" style="margin-top:8px" data-i18n="result_replay">↺ ИГРАТЬ СНОВА</button>
+    </div>
+  </div>
+</div>
+
+<!-- Radio soundbar -->
+<div class="radio-bar" id="radio-bar">
+  <div class="rb-eq paused" id="rb-eq">
+    <div class="rb-bar"></div><div class="rb-bar"></div>
+    <div class="rb-bar"></div><div class="rb-bar"></div>
+  </div>
+  <div class="rb-info">
+    <div class="rb-name" id="rb-name">— радио не играет —</div>
+    <div class="rb-sub"  id="rb-sub"></div>
+  </div>
+  <button class="rb-playstop" id="rb-playstop" onclick="rbToggle()">▶ Играть</button>
+</div>
+
+<audio id="rb-audio" preload="none"></audio>
+
+<div class="modal-overlay" id="lvl-modal">
+  <div class="modal-box">
+    <div class="modal-title" id="lvl-modal-title" data-i18n="lvlup_title">⬆ ПОВЫШЕНИЕ УРОВНЯ!</div>
+    <div class="modal-sub" data-i18n="lvlup_sub">Выберите улучшение характеристики</div>
+    <div class="stat-choices" id="stat-choices"></div>
+  </div>
+</div>
+
+<script>
+// ── Skins ──────────────────────────────────────────────
+const SKIN_KEY='radiowaveSkin';
+const SKINS={
+  dark:  {'--accent':'#00e5ff','--accent2':'#ff3cac','--accent3':'#ffcc00','--bg':'#080b12','--bg2':'#0d1220','--surface':'#111827','--border':'#1e2d45','--text':'#cdd6f4','--muted':'#4a5568'},
+  light: {'--accent':'#0077cc','--accent2':'#e0006a','--accent3':'#d17000','--bg':'#f0f4f8','--bg2':'#e4eaf2','--surface':'#ffffff','--border':'#c8d4e0','--text':'#1a2540','--muted':'#7a8aaa'},
+  neon:  {'--accent':'#ff00ff','--accent2':'#00ffcc','--accent3':'#ffff00','--bg':'#080010','--bg2':'#10011a','--surface':'#140820','--border':'#2d1050','--text':'#f0e0ff','--muted':'#5a3a7a'},
+  retro: {'--accent':'#33ff33','--accent2':'#ffaa00','--accent3':'#ffdd00','--bg':'#000800','--bg2':'#001200','--surface':'#001800','--border':'#003300','--text':'#88ff88','--muted':'#2a5a2a'},
+  sunset:{'--accent':'#ff6b35','--accent2':'#ff2d7a','--accent3':'#ffd166','--bg':'#0f0810','--bg2':'#1a0d18','--surface':'#241020','--border':'#3d1a30','--text':'#f5d0e0','--muted':'#7a4060'},
+  deep:  {'--accent':'#38bdf8','--accent2':'#818cf8','--accent3':'#34d399','--bg':'#020c1b','--bg2':'#071428','--surface':'#0d1f3c','--border':'#162d52','--text':'#cae6ff','--muted':'#3a5a7a'},
+  ash:   {'--accent':'#a8b2c0','--accent2':'#7c8fa0','--accent3':'#d0d8e0','--bg':'#111316','--bg2':'#181b1f','--surface':'#1f2328','--border':'#2c3038','--text':'#c8d0da','--muted':'#4a5260'},
+};
+function setSkin(name){
+  const skin=SKINS[name];if(!skin)return;
+  Object.entries(skin).forEach(([k,v])=>document.documentElement.style.setProperty(k,v));
+  localStorage.setItem(SKIN_KEY,name);
+  document.documentElement.classList.toggle('skin-light',name==='light');
+  document.querySelectorAll('.skin-item').forEach(el=>el.classList.toggle('active',el.dataset.skin===name));
+  closeAllPanels();
+}
+function loadSkin(){setSkin(localStorage.getItem(SKIN_KEY)||'dark');}
+
+// ── i18n ───────────────────────────────────────────────
+const LANG_KEY='radiowaveLang';
+const I18N={
+  ru:{skins:'СКИНЫ',skin_dark:'Тёмный',skin_light:'Светлый',skin_neon:'Неон',skin_retro:'Ретро',skin_sunset:'Закат',skin_deep:'Глубина',skin_ash:'Пепел',lang_code:'RU',back_site:'На сайт',rb_no_station:'— радио не играет —',btn_play:'Играть',btn_stop:'Стоп',
+    setup_title:'⚔ DUNGEON CRAWLER',setup_sub:'ПОШАГОВАЯ РПГ · ВЫБЕРИТЕ РЕЖИМ',
+    btn_1p:'⚔ ОДИН ИГРОК',btn_2p:'⚔⚔ ДВА ИГРОКА',btn_start:'▶ НАЧАТЬ ИГРУ',
+    player_label:'ИГРОК',name_placeholder:'Введите имя...',class_label:'КЛАСС',hero_default:'Герой',
+    intro_title:'📜 ЗАВЯЗКА',btn_dungeon:'⚔ В ПОДЗЕМЕЛЬЕ',
+    enemy_label:'ПРОТИВНИК',actions_label:'ДЕЙСТВИЯ',
+    result_replay:'↺ ИГРАТЬ СНОВА',lvlup_title:'⬆ ПОВЫШЕНИЕ УРОВНЯ!',lvlup_sub:'Выберите улучшение характеристики',
+    badge_mob:'MOB',badge_miniboss:'МИНИ-БОСС',badge_boss:'ФИНАЛЬНЫЙ БОСС',
+    class_warrior:'Воин',class_mage:'Маг',class_rogue:'Разбойник',class_archer:'Лучник',
+    desc_warrior:'Высокая защита и HP',desc_mage:'Высокий урон и крит',desc_rogue:'Высокий крит и уклонение',desc_archer:'Скорость и точность',
+    mp_warrior:'Выносливость',mp_mage:'Мана',mp_rogue:'Энергия',mp_archer:'Концентрация',
+    // intros
+    intro_warrior:'Некогда мирный страж пограничной крепости, ты видел, как Тёмный Владыка поглотил твой дом тенью и огнём. Выжив из всего гарнизона, ты дал клятву на руинах: пройти через все испытания подземелья, одолеть его прислужников и сразить самого Владыку. Твой щит — последняя надежда этих земель.',
+    intro_mage:'Ты хранитель Архива Знаний — единственный, кто прочёл пророчество о пробуждении Тёмного Владыки. Когда пали башни твоего ордена, ты собрал последние свитки и двинулся в сердце тьмы. Только разрушив источник его силы в глубинах подземелья, можно остановить надвигающийся апокалипсис.',
+    intro_rogue:'Ты работал на Гильдию Теней — пока Тёмный Владыка не уничтожил её вместе со всеми, кто тебе был дорог. Месть — холодное блюдо, но ты подаёшь её с ядом и сталью. Контракт на убийство самого могущественного существа в мире? Лучший заказ в твоей карьере.',
+    intro_archer:'Дети Леса называли тебя «Тем, кто не промахивается». Когда Тёмный Владыка выжег Вечный Лес — дом твоего народа — ты поклялся каждым деревом: твоя стрела найдёт его сердце. Путь лежит через подземелье, полное его слуг. Натяни тетиву.',
+    intro_duo:'Рядом с тобой —',intro_duo2:'Вместе вы сильнее.',
+    // monsters
+    mob_wolf:'Дикий волк',mob_rat:'Гигантская крыса',mob_boar:'Дикий кабан',mob_bat:'Летучая мышь',mob_spider:'Ядовитый паук',mob_skeleton:'Скелет',
+    mob_gscout:'Гоблин-разведчик',mob_gshaman:'Гоблин-шаман',mob_gbomber:'Гоблин-бомбардир',mob_gberserker:'Гоблин-берсерк',mob_garcher:'Гоблин-лучник',mob_gthief:'Гоблин-вор',
+    mob_owarrior:'Орк-воин',mob_oshaman:'Орк-шаман',mob_oberserker:'Орк-берсерк',mob_oguard:'Орк-страж',mob_osniper:'Орк-снайпер',mob_opriestess:'Орчиха-жрица',
+    mob_zombie:'Зомби',mob_ghost:'Призрак',mob_bonerider:'Костяной рыцарь',mob_lich:'Личный маг',mob_vampire:'Вампир',mob_banshee:'Баньши',
+    mob_imp:'Бес',mob_fireimp:'Огненный бес',mob_firedemon:'Демон огня',mob_shadowdemon:'Теневой демон',mob_hellhound:'Адский пёс',mob_chaosit:'Хаосит',
+    mob_dragonling:'Дракончик',mob_lizardrider:'Ящер-рыцарь',mob_dragonguard:'Дракон-страж',mob_firedragon:'Огненный дракон',mob_icedragon:'Ледяной дракон',mob_shadowdragon:'Теневой дракон',
+    boss_goblinchieftain:'Гоблин-вождь',boss_orkberserker:'Орк-берсерк',boss_troll:'Тролль',boss_fireelemental:'Огненный элементаль',boss_necromancer:'Некромант',boss_wyvern:'Виверна',
+    boss_darkmaster:'Тёмный Владыка',
+    phase1_msg:'⚡ ТЁМНЫЙ ВЛАДЫКА разъярён! Урон +50%!',phase2_msg:'💀 ДВОЙНОЙ УДАР в агонии!',
+    // loot
+    loot_hppot:'Зелье HP',loot_hppot_big:'Большое HP',loot_mppot:'Зелье MP',loot_mppot_big:'Большое MP',
+    // stat upgrades
+    stat_agi:'Ловкость',stat_agi_desc:'+8% крит-шанс на все атаки',
+    stat_lck:'Удача',stat_lck_desc:'+5% шанс убить с одного скилла',
+    stat_str:'Сила',stat_str_desc:'+25 HP, +15 ресурса',
+    stat_elm:'Стихия',stat_elm_desc:'+20% урон всех скиллов',
+    // skills
+    sk_attack:'Атака',sk_attack_hint:'Крит',sk_insta:'мгн',
+    sk_sb:'Удар щитом',sk_sb_desc:'Оглушает +50% урона',sk_sb_tip:'Шанс оглушения 40%',
+    sk_wc:'Боевой клич',sk_wc_desc:'Атака +30% на 2 хода',sk_wc_tip:'+30% атаки на 2 хода',
+    sk_cl:'Рассечение',sk_cl_desc:'25% от макс HP врага',sk_cl_tip:'Урон = 25% макс HP',
+    sk_fb:'Огненный шар',sk_fb_desc:'×2.2 урона огнём',sk_fb_tip:'×2.2 урон',
+    sk_is:'Ледяной шип',sk_is_desc:'Замедляет врага на 2 хода',sk_is_tip:'Замедление 2 хода',
+    sk_ar:'Аркановый всплеск',sk_ar_desc:'15% шанс мгновенной смерти',sk_ar_tip:'15%+удача / иначе ×3',
+    sk_bs:'Удар в спину',sk_bs_desc:'Гарантированный крит ×3',sk_bs_tip:'×3 урон, гарант. крит',
+    sk_sm:'Дымовая завеса',sk_sm_desc:'Уклонение +50% на 2 хода',sk_sm_tip:'+50% уклонения 2 хода',
+    sk_po:'Яд',sk_po_desc:'Отравляет врага на 3 хода',sk_po_tip:'10% атаки/ход 3 хода',
+    sk_ms:'Мультивыстрел',sk_ms_desc:'3 стрелы, каждая критует',sk_ms_tip:'3×0.7 атаки, крит каждой',
+    sk_ai:'Прицельный',sk_ai_desc:'×2.5 урона, +30% крит',sk_ai_tip:'×2.5, крит-шанс+30%',
+    sk_eg:'Орлиный глаз',sk_eg_desc:'Следующий удар — гарант. крит',sk_eg_tip:'Гарантированный крит',
+    // battle log
+    log_appear:'Появился',log_tier:'Тир',
+    log_miniboss:'⚠ МИНИ-БОСС',log_boss_appear:'👑 ТЁМНЫЙ ВЛАДЫКА явился!',
+    log_warn_boss:'☠ ФИНАЛЬНЫЙ БОСС — ТЁМНЫЙ ВЛАДЫКА ПРОБУДИЛСЯ!',log_warn_danger:'⚠ ВНИМАНИЕ — ВПЕРЕДИ ОПАСНЫЙ ПРОТИВНИК!',
+    log_killed:'повержен!',log_fallen:'пал!',
+    log_dodge:'УКЛОНЕНИЕ!',log_dmg:'урона',log_crit:'— КРИТ!',log_crit2:'КРИТ',
+    log_instakill:'МГНОВЕННАЯ СМЕРТЬ!',
+    log_stun:'оглушён!',log_slow:'замедлен — пропуск!',
+    log_enemy_atk:'атакует',log_enemy_dbl:'ДВОЙНОЙ УДАР!',
+    log_poison_enemy:'горит от яда',log_regen:'регенерирует',
+    log_player_poison:'(яд)',
+    log_buff_atk:'Атака +% на # хода',log_buff_dodge:'Уклонение +% на # хода',log_buff_crit:'Следующий удар — гарант. крит!',
+    log_stun_res:'Враг оглушён!',log_slow_res:'Враг замедлен на # хода!',log_poison_res:'Враг отравлен (# хода)!',
+    log_loot:'Выпало',log_xp:'+%XP XP (%/%)',
+    log_levelup:'УРОВЕНЬ %! HP и MP полностью восстановлены!',
+    log_picked:'выбрал',
+    log_extra:'ВНЕОЧЕРЕДНОЙ ХОД!',
+    // player stats labels
+    stat_atk:'АТК',stat_def:'ЗАЩ',stat_crit:'КРИТ',stat_dodge:'УКЛОН',stat_level:'УРОВЕНЬ',
+    // results
+    res_win:'🏆 ПОБЕДА!',res_lose:'💀 ПОРАЖЕНИЕ',
+    res_win_sub:'DUNGEON CLEARED — ТЁМНЫЙ ВЛАДЫКА ПОВЕРЖЕН!',res_lose_sub:'ГЕРОИ ПАЛИ В БОЮ...',
+    res_turns:'ХОДОВ',res_dmg:'НАНЕСЕНО УРОНА',res_crits:'КРИТИЧЕСКИХ УДАРОВ',res_kills:'УБИЙСТВ',
+    res_time:'⏱ ВРЕМЯ',res_min:'мин',res_sec:'сек',
+    // level up modal
+    lvlup_player:'⬆ % — УРОВЕНЬ %!',
+    log_lvlup_picked:'выбрал',
+    // cd
+    cd:'КД',
+  },
+  en:{skins:'SKINS',skin_dark:'Dark',skin_light:'Light',skin_neon:'Neon',skin_retro:'Retro',skin_sunset:'Sunset',skin_deep:'Deep',skin_ash:'Ash',lang_code:'EN',back_site:'To site',rb_no_station:'— radio is off —',btn_play:'Play',btn_stop:'Stop',
+    setup_title:'⚔ DUNGEON CRAWLER',setup_sub:'TURN-BASED RPG · CHOOSE MODE',
+    btn_1p:'⚔ SINGLE PLAYER',btn_2p:'⚔⚔ TWO PLAYERS',btn_start:'▶ START GAME',
+    player_label:'PLAYER',name_placeholder:'Enter name...',class_label:'CLASS',hero_default:'Hero',
+    intro_title:'📜 PROLOGUE',btn_dungeon:'⚔ ENTER DUNGEON',
+    enemy_label:'ENEMY',actions_label:'ACTIONS',
+    result_replay:'↺ PLAY AGAIN',lvlup_title:'⬆ LEVEL UP!',lvlup_sub:'Choose a stat upgrade',
+    badge_mob:'MOB',badge_miniboss:'MINI-BOSS',badge_boss:'FINAL BOSS',
+    class_warrior:'Warrior',class_mage:'Mage',class_rogue:'Rogue',class_archer:'Archer',
+    desc_warrior:'High defence and HP',desc_mage:'High damage and crit',desc_rogue:'High crit and dodge',desc_archer:'Speed and precision',
+    mp_warrior:'Stamina',mp_mage:'Mana',mp_rogue:'Energy',mp_archer:'Focus',
+    intro_warrior:'Once a peaceful border guard, you watched the Dark Lord swallow your home in shadow and fire. The sole survivor of your garrison, you swore an oath on the ruins: fight through the dungeon, defeat his servants, and slay the Lord himself. Your shield is the last hope of this land.',
+    intro_mage:'You are the keeper of the Archive of Knowledge — the only one who read the prophecy of the Dark Lord\'s awakening. When your order\'s towers fell, you gathered the last scrolls and marched into the heart of darkness. Only by destroying his power source in the dungeon\'s depths can the coming apocalypse be stopped.',
+    intro_rogue:'You worked for the Shadow Guild — until the Dark Lord destroyed it along with everyone you cared about. Revenge is a cold dish, but you serve it with poison and steel. A contract to kill the most powerful creature in the world? Best job of your career.',
+    intro_archer:'The Forest Children called you "The One Who Never Misses". When the Dark Lord burned the Eternal Forest — your people\'s home — you swore by every tree: your arrow will find his heart. The path leads through a dungeon full of his servants. Nock your bow.',
+    intro_duo:'By your side —',intro_duo2:'Together you are stronger.',
+    mob_wolf:'Wild Wolf',mob_rat:'Giant Rat',mob_boar:'Wild Boar',mob_bat:'Bat',mob_spider:'Poison Spider',mob_skeleton:'Skeleton',
+    mob_gscout:'Goblin Scout',mob_gshaman:'Goblin Shaman',mob_gbomber:'Goblin Bomber',mob_gberserker:'Goblin Berserker',mob_garcher:'Goblin Archer',mob_gthief:'Goblin Thief',
+    mob_owarrior:'Orc Warrior',mob_oshaman:'Orc Shaman',mob_oberserker:'Orc Berserker',mob_oguard:'Orc Guard',mob_osniper:'Orc Sniper',mob_opriestess:'Orc Priestess',
+    mob_zombie:'Zombie',mob_ghost:'Ghost',mob_bonerider:'Bone Knight',mob_lich:'Lich Mage',mob_vampire:'Vampire',mob_banshee:'Banshee',
+    mob_imp:'Imp',mob_fireimp:'Fire Imp',mob_firedemon:'Fire Demon',mob_shadowdemon:'Shadow Demon',mob_hellhound:'Hellhound',mob_chaosit:'Chaos Beast',
+    mob_dragonling:'Dragonling',mob_lizardrider:'Lizard Knight',mob_dragonguard:'Dragon Guard',mob_firedragon:'Fire Dragon',mob_icedragon:'Ice Dragon',mob_shadowdragon:'Shadow Dragon',
+    boss_goblinchieftain:'Goblin Chieftain',boss_orkberserker:'Orc Berserker',boss_troll:'Troll',boss_fireelemental:'Fire Elemental',boss_necromancer:'Necromancer',boss_wyvern:'Wyvern',
+    boss_darkmaster:'Dark Lord',
+    phase1_msg:'⚡ THE DARK LORD is enraged! Damage +50%!',phase2_msg:'💀 DOUBLE STRIKE in agony!',
+    loot_hppot:'HP Potion',loot_hppot_big:'Large HP',loot_mppot:'MP Potion',loot_mppot_big:'Large MP',
+    stat_agi:'Agility',stat_agi_desc:'+8% crit chance on all attacks',
+    stat_lck:'Luck',stat_lck_desc:'+5% chance to one-shot with a skill',
+    stat_str:'Strength',stat_str_desc:'+25 HP, +15 resource',
+    stat_elm:'Element',stat_elm_desc:'+20% damage from all skills',
+    sk_attack:'Attack',sk_attack_hint:'Crit',sk_insta:'insta',
+    sk_sb:'Shield Bash',sk_sb_desc:'Stun chance +50% dmg',sk_sb_tip:'40% stun chance',
+    sk_wc:'Battle Cry',sk_wc_desc:'Attack +30% for 2 turns',sk_wc_tip:'+30% atk for 2 turns',
+    sk_cl:'Cleave',sk_cl_desc:'25% of enemy max HP',sk_cl_tip:'Dmg = 25% max HP',
+    sk_fb:'Fireball',sk_fb_desc:'×2.2 fire damage',sk_fb_tip:'×2.2 damage',
+    sk_is:'Ice Spike',sk_is_desc:'Slows enemy for 2 turns',sk_is_tip:'Slow 2 turns',
+    sk_ar:'Arcane Burst',sk_ar_desc:'15% instant kill chance',sk_ar_tip:'15%+luck / else ×3',
+    sk_bs:'Backstab',sk_bs_desc:'Guaranteed crit ×3',sk_bs_tip:'×3 dmg, forced crit',
+    sk_sm:'Smoke Screen',sk_sm_desc:'Dodge +50% for 2 turns',sk_sm_tip:'+50% dodge 2 turns',
+    sk_po:'Poison',sk_po_desc:'Poisons enemy for 3 turns',sk_po_tip:'10% atk/turn 3 turns',
+    sk_ms:'Multishot',sk_ms_desc:'3 arrows, each can crit',sk_ms_tip:'3×0.7 atk, crit each',
+    sk_ai:'Aimed Shot',sk_ai_desc:'×2.5 dmg, +30% crit',sk_ai_tip:'×2.5, crit+30%',
+    sk_eg:'Eagle Eye',sk_eg_desc:'Next hit guaranteed crit',sk_eg_tip:'Guaranteed crit',
+    log_appear:'Appeared',log_tier:'Tier',
+    log_miniboss:'⚠ MINI-BOSS',log_boss_appear:'👑 THE DARK LORD appears!',
+    log_warn_boss:'☠ FINAL BOSS — THE DARK LORD HAS AWAKENED!',log_warn_danger:'⚠ WARNING — A DANGEROUS FOE APPROACHES!',
+    log_killed:'defeated!',log_fallen:'has fallen!',
+    log_dodge:'DODGE!',log_dmg:'damage',log_crit:'— CRIT!',log_crit2:'CRIT',
+    log_instakill:'INSTANT KILL!',
+    log_stun:'is stunned!',log_slow:'slowed — skip!',
+    log_enemy_atk:'attacks',log_enemy_dbl:'DOUBLE STRIKE!',
+    log_poison_enemy:'burning from poison',log_regen:'regenerates',
+    log_player_poison:'(poison)',
+    log_buff_atk:'Attack +% for # turns',log_buff_dodge:'Dodge +% for # turns',log_buff_crit:'Next hit guaranteed crit!',
+    log_stun_res:'Enemy stunned!',log_slow_res:'Enemy slowed for # turns!',log_poison_res:'Enemy poisoned (# turns)!',
+    log_loot:'Dropped',log_xp:'+%XP XP (%/%)',
+    log_levelup:'LEVEL %! HP and MP fully restored!',
+    log_picked:'chose',log_extra:'EXTRA TURN!',
+    stat_atk:'ATK',stat_def:'DEF',stat_crit:'CRIT',stat_dodge:'DODGE',stat_level:'LEVEL',
+    res_win:'🏆 VICTORY!',res_lose:'💀 DEFEAT',
+    res_win_sub:'DUNGEON CLEARED — THE DARK LORD IS VANQUISHED!',res_lose_sub:'THE HEROES HAVE FALLEN...',
+    res_turns:'TURNS',res_dmg:'DAMAGE DEALT',res_crits:'CRITICAL HITS',res_kills:'KILLS',
+    res_time:'⏱ TIME',res_min:'min',res_sec:'sec',
+    lvlup_player:'⬆ % — LEVEL %!',log_lvlup_picked:'chose',cd:'CD',
+  },
+  de:{skins:'SKINS',skin_dark:'Dunkel',skin_light:'Hell',skin_neon:'Neon',skin_retro:'Retro',skin_sunset:'Sonnenuntergang',skin_deep:'Tief',skin_ash:'Asche',lang_code:'DE',back_site:'Zur Website',rb_no_station:'— Radio aus —',btn_play:'Abspielen',btn_stop:'Stopp',
+    setup_title:'⚔ DUNGEON CRAWLER',setup_sub:'RUNDENBASIERTES RPG · MODUS WÄHLEN',
+    btn_1p:'⚔ EINZELSPIELER',btn_2p:'⚔⚔ ZWEI SPIELER',btn_start:'▶ SPIEL STARTEN',
+    player_label:'SPIELER',name_placeholder:'Name eingeben...',class_label:'KLASSE',hero_default:'Held',
+    intro_title:'📜 PROLOG',btn_dungeon:'⚔ INS VERLIES',
+    enemy_label:'GEGNER',actions_label:'AKTIONEN',
+    result_replay:'↺ NOCHMAL SPIELEN',lvlup_title:'⬆ LEVELAUFSTIEG!',lvlup_sub:'Wähle eine Verbesserung',
+    badge_mob:'MOB',badge_miniboss:'MINI-BOSS',badge_boss:'ENDBOSS',
+    class_warrior:'Krieger',class_mage:'Magier',class_rogue:'Schurke',class_archer:'Bogenschütze',
+    desc_warrior:'Hohe Verteidigung und HP',desc_mage:'Hoher Schaden und Krit',desc_rogue:'Hoher Krit und Ausweichen',desc_archer:'Geschwindigkeit und Präzision',
+    mp_warrior:'Ausdauer',mp_mage:'Mana',mp_rogue:'Energie',mp_archer:'Konzentration',
+    intro_warrior:'Einst ein friedlicher Grenzwächter, sahst du, wie der Dunkle Fürst dein Zuhause in Schatten und Feuer tauchte. Als Einziger deiner Garnison überlebtest du und schwurst auf den Ruinen: durch das Verlies kämpfen, seine Diener besiegen, den Fürsten stürzen. Dein Schild ist die letzte Hoffnung.',
+    intro_mage:'Du bist der Hüter des Wissensarchivs — der Einzige, der die Prophezeiung über das Erwachen des Dunklen Fürsten gelesen hat. Als dein Orden fiel, nahmst du die letzten Schriften und zogst ins Herz der Dunkelheit. Nur durch die Zerstörung seiner Macht in den Tiefen des Verlieses lässt sich die Apokalypse aufhalten.',
+    intro_rogue:'Du arbeitest für die Schattengilde — bis der Dunkle Fürst sie zusammen mit allen, die dir wichtig waren, vernichtete. Rache ist ein kaltes Gericht, aber du servierst es mit Gift und Stahl. Ein Auftrag, das mächtigste Wesen der Welt zu töten? Der beste Job deiner Karriere.',
+    intro_archer:'Die Waldkinder nannten dich „Den, der nie verfehlt". Als der Dunkle Fürst den Ewigen Wald — das Zuhause deines Volkes — niederbrannte, schwurst du bei jedem Baum: Dein Pfeil wird sein Herz finden. Der Weg führt durch ein Verlies voller seiner Diener. Spanne deinen Bogen.',
+    intro_duo:'An deiner Seite —',intro_duo2:'Zusammen seid ihr stärker.',
+    mob_wolf:'Wilder Wolf',mob_rat:'Riesenratte',mob_boar:'Wildschwein',mob_bat:'Fledermaus',mob_spider:'Giftspinne',mob_skeleton:'Skelett',
+    mob_gscout:'Goblin-Späher',mob_gshaman:'Goblin-Schamane',mob_gbomber:'Goblin-Bomber',mob_gberserker:'Goblin-Berserker',mob_garcher:'Goblin-Bogenschütze',mob_gthief:'Goblin-Dieb',
+    mob_owarrior:'Ork-Krieger',mob_oshaman:'Ork-Schamane',mob_oberserker:'Ork-Berserker',mob_oguard:'Ork-Wächter',mob_osniper:'Ork-Scharfschütze',mob_opriestess:'Ork-Priesterin',
+    mob_zombie:'Zombie',mob_ghost:'Geist',mob_bonerider:'Knochenritter',mob_lich:'Lich-Magier',mob_vampire:'Vampir',mob_banshee:'Banshee',
+    mob_imp:'Imp',mob_fireimp:'Feuer-Imp',mob_firedemon:'Feuerdämon',mob_shadowdemon:'Schattendämon',mob_hellhound:'Höllenhund',mob_chaosit:'Chaoswesen',
+    mob_dragonling:'Drachenwelpe',mob_lizardrider:'Echsenritter',mob_dragonguard:'Drachenwächter',mob_firedragon:'Feuerdrache',mob_icedragon:'Eisdrache',mob_shadowdragon:'Schattendrache',
+    boss_goblinchieftain:'Goblin-Anführer',boss_orkberserker:'Ork-Berserker',boss_troll:'Troll',boss_fireelemental:'Feuerelement',boss_necromancer:'Nekromant',boss_wyvern:'Wyvern',
+    boss_darkmaster:'Dunkler Fürst',
+    phase1_msg:'⚡ DER DUNKLE FÜRST ist wütend! Schaden +50%!',phase2_msg:'💀 DOPPELSCHLAG in Agonie!',
+    loot_hppot:'HP-Trank',loot_hppot_big:'Großer HP',loot_mppot:'MP-Trank',loot_mppot_big:'Großer MP',
+    stat_agi:'Geschicklichkeit',stat_agi_desc:'+8% Krit-Chance',stat_lck:'Glück',stat_lck_desc:'+5% Soforttod-Chance',
+    stat_str:'Stärke',stat_str_desc:'+25 HP, +15 Ressource',stat_elm:'Element',stat_elm_desc:'+20% Fertigkeitsschaden',
+    sk_attack:'Angriff',sk_attack_hint:'Krit',sk_insta:'sofort',
+    sk_sb:'Schildstoß',sk_sb_desc:'Betäubung +50% Schaden',sk_sb_tip:'40% Betäubungschance',
+    sk_wc:'Schlachtruf',sk_wc_desc:'Angriff +30% für 2 Runden',sk_wc_tip:'+30% Atk 2 Runden',
+    sk_cl:'Spalter',sk_cl_desc:'25% der max HP des Feindes',sk_cl_tip:'25% max HP Schaden',
+    sk_fb:'Feuerball',sk_fb_desc:'×2.2 Feuerschaden',sk_fb_tip:'×2.2 Schaden',
+    sk_is:'Eisdorn',sk_is_desc:'Verlangsamt Feind 2 Runden',sk_is_tip:'Verlangsamung 2 Runden',
+    sk_ar:'Arkaner Ausbruch',sk_ar_desc:'15% Soforttod-Chance',sk_ar_tip:'15% / sonst ×3',
+    sk_bs:'Rückentreffer',sk_bs_desc:'Garantierter Krit ×3',sk_bs_tip:'×3 Schaden, erzwungener Krit',
+    sk_sm:'Rauchvorhang',sk_sm_desc:'Ausweichen +50% 2 Runden',sk_sm_tip:'+50% Ausweichen',
+    sk_po:'Gift',sk_po_desc:'Vergiftet Feind 3 Runden',sk_po_tip:'10% Atk/Runde',
+    sk_ms:'Mehrfachschuss',sk_ms_desc:'3 Pfeile, jeder kann kriten',sk_ms_tip:'3×0.7, Krit je Pfeil',
+    sk_ai:'Gezielter Schuss',sk_ai_desc:'×2.5 Schaden, +30% Krit',sk_ai_tip:'×2.5, Krit+30%',
+    sk_eg:'Adlerauge',sk_eg_desc:'Nächster Treffer = Krit',sk_eg_tip:'Garantierter Krit',
+    log_appear:'Erschienen',log_tier:'Stufe',log_miniboss:'⚠ MINI-BOSS',log_boss_appear:'👑 DER DUNKLE FÜRST erscheint!',
+    log_warn_boss:'☠ ENDBOSS — DER DUNKLE FÜRST IST ERWACHT!',log_warn_danger:'⚠ ACHTUNG — EIN GEFÄHRLICHER FEIND NAHT!',
+    log_killed:'besiegt!',log_fallen:'gefallen!',log_dodge:'AUSGEWICHEN!',log_dmg:'Schaden',log_crit:'— KRIT!',log_crit2:'KRIT',
+    log_instakill:'SOFORTTOD!',log_stun:'betäubt!',log_slow:'verlangsamt — überspringen!',
+    log_enemy_atk:'greift an',log_enemy_dbl:'DOPPELSCHLAG!',
+    log_poison_enemy:'brennt durch Gift',log_regen:'regeneriert',log_player_poison:'(Gift)',
+    log_buff_atk:'Angriff +% für # Runden',log_buff_dodge:'Ausweichen +% für # Runden',log_buff_crit:'Nächster Treffer garantierter Krit!',
+    log_stun_res:'Feind betäubt!',log_slow_res:'Feind verlangsamt für # Runden!',log_poison_res:'Feind vergiftet (# Runden)!',
+    log_loot:'Gefallen',log_xp:'+%XP XP (%/%)',log_levelup:'LEVEL %! HP und MP vollständig wiederhergestellt!',
+    log_picked:'wählte',log_extra:'EXTRARUNDE!',
+    stat_atk:'ATK',stat_def:'VTD',stat_crit:'KRIT',stat_dodge:'AUS',stat_level:'LEVEL',
+    res_win:'🏆 SIEG!',res_lose:'💀 NIEDERLAGE',
+    res_win_sub:'VERLIES BEZWUNGEN — DER DUNKLE FÜRST IST GEFALLEN!',res_lose_sub:'DIE HELDEN SIND GEFALLEN...',
+    res_turns:'RUNDEN',res_dmg:'SCHADEN VERURSACHT',res_crits:'KRITISCHE TREFFER',res_kills:'KILLS',
+    res_time:'⏱ ZEIT',res_min:'Min',res_sec:'Sek',lvlup_player:'⬆ % — LEVEL %!',log_lvlup_picked:'wählte',cd:'AZ',
+  },
+  fr:{skins:'THÈMES',skin_dark:'Sombre',skin_light:'Clair',skin_neon:'Néon',skin_retro:'Rétro',skin_sunset:'Coucher',skin_deep:'Abyssal',skin_ash:'Cendre',lang_code:'FR',back_site:'Vers le site',rb_no_station:'— radio éteinte —',btn_play:'Lancer',btn_stop:'Stop',
+    setup_title:'⚔ DUNGEON CRAWLER',setup_sub:'RPG TOUR PAR TOUR · CHOISIR LE MODE',
+    btn_1p:'⚔ UN JOUEUR',btn_2p:'⚔⚔ DEUX JOUEURS',btn_start:'▶ COMMENCER',
+    player_label:'JOUEUR',name_placeholder:'Entrez le nom...',class_label:'CLASSE',hero_default:'Héros',
+    intro_title:'📜 PROLOGUE',btn_dungeon:'⚔ ENTRER DANS LE DONJON',
+    enemy_label:'ENNEMI',actions_label:'ACTIONS',
+    result_replay:'↺ REJOUER',lvlup_title:'⬆ NIVEAU SUPÉRIEUR !',lvlup_sub:'Choisissez une amélioration',
+    badge_mob:'MOB',badge_miniboss:'MINI-BOSS',badge_boss:'BOSS FINAL',
+    class_warrior:'Guerrier',class_mage:'Mage',class_rogue:'Voleur',class_archer:'Archer',
+    desc_warrior:'Haute défense et PV',desc_mage:'Dégâts et critique élevés',desc_rogue:'Critique et esquive élevés',desc_archer:'Vitesse et précision',
+    mp_warrior:'Endurance',mp_mage:'Mana',mp_rogue:'Énergie',mp_archer:'Concentration',
+    intro_warrior:'Jadis paisible gardien d\'une forteresse frontalière, vous avez vu le Seigneur des Ténèbres engloutir votre maison dans l\'ombre et le feu. Seul survivant de votre garnison, vous avez juré sur les ruines : traverser le donjon, vaincre ses serviteurs et abattre le Seigneur lui-même.',
+    intro_mage:'Vous êtes le gardien des Archives du Savoir — le seul à avoir lu la prophétie sur l\'éveil du Seigneur des Ténèbres. Quand les tours de votre ordre sont tombées, vous avez rassemblé les derniers parchemins et marché vers le cœur des ténèbres.',
+    intro_rogue:'Vous travailliez pour la Guilde des Ombres — jusqu\'à ce que le Seigneur des Ténèbres la détruise avec tout ce qui vous était cher. La vengeance est un plat froid, mais vous le servez avec du poison et de l\'acier.',
+    intro_archer:'Les Enfants de la Forêt vous appelaient « Celui qui ne rate jamais ». Quand le Seigneur des Ténèbres a brûlé la Forêt Éternelle, vous avez juré par chaque arbre : votre flèche trouvera son cœur.',
+    intro_duo:'À vos côtés —',intro_duo2:'Ensemble vous êtes plus forts.',
+    mob_wolf:'Loup sauvage',mob_rat:'Rat géant',mob_boar:'Sanglier',mob_bat:'Chauve-souris',mob_spider:'Araignée venimeuse',mob_skeleton:'Squelette',
+    mob_gscout:'Gobelin éclaireur',mob_gshaman:'Gobelin chaman',mob_gbomber:'Gobelin bombardier',mob_gberserker:'Gobelin berserker',mob_garcher:'Gobelin archer',mob_gthief:'Gobelin voleur',
+    mob_owarrior:'Orc guerrier',mob_oshaman:'Orc chaman',mob_oberserker:'Orc berserker',mob_oguard:'Orc gardien',mob_osniper:'Orc tireur',mob_opriestess:'Orc prêtresse',
+    mob_zombie:'Zombie',mob_ghost:'Fantôme',mob_bonerider:'Chevalier osseux',mob_lich:'Liche',mob_vampire:'Vampire',mob_banshee:'Banshee',
+    mob_imp:'Diablotin',mob_fireimp:'Diablotin de feu',mob_firedemon:'Démon de feu',mob_shadowdemon:'Démon des ombres',mob_hellhound:'Chien infernal',mob_chaosit:'Bête du chaos',
+    mob_dragonling:'Dragonnet',mob_lizardrider:'Chevalier lézard',mob_dragonguard:'Gardien dragon',mob_firedragon:'Dragon de feu',mob_icedragon:'Dragon de glace',mob_shadowdragon:'Dragon des ombres',
+    boss_goblinchieftain:'Chef gobelin',boss_orkberserker:'Orc berserker',boss_troll:'Troll',boss_fireelemental:'Élémental de feu',boss_necromancer:'Nécromancien',boss_wyvern:'Wyverne',
+    boss_darkmaster:'Seigneur des Ténèbres',
+    phase1_msg:'⚡ LE SEIGNEUR DES TÉNÈBRES est furieux ! Dégâts +50% !',phase2_msg:'💀 DOUBLE FRAPPE en agonie !',
+    loot_hppot:'Potion PV',loot_hppot_big:'Grande PV',loot_mppot:'Potion PM',loot_mppot_big:'Grande PM',
+    stat_agi:'Agilité',stat_agi_desc:'+8% chance de critique',stat_lck:'Chance',stat_lck_desc:'+5% mort instantanée',
+    stat_str:'Force',stat_str_desc:'+25 PV, +15 ressource',stat_elm:'Élément',stat_elm_desc:'+20% dégâts de compétences',
+    sk_attack:'Attaque',sk_attack_hint:'Crit',sk_insta:'instant',
+    sk_sb:'Coup de bouclier',sk_sb_desc:'Étourdissement +50% dégâts',sk_sb_tip:'40% d\'étourdissement',
+    sk_wc:'Cri de guerre',sk_wc_desc:'Attaque +30% pour 2 tours',sk_wc_tip:'+30% atk 2 tours',
+    sk_cl:'Taillade',sk_cl_desc:'25% des PV max de l\'ennemi',sk_cl_tip:'25% des PV max',
+    sk_fb:'Boule de feu',sk_fb_desc:'×2.2 dégâts de feu',sk_fb_tip:'×2.2 dégâts',
+    sk_is:'Pointe de glace',sk_is_desc:'Ralentit l\'ennemi 2 tours',sk_is_tip:'Ralentissement 2 tours',
+    sk_ar:'Explosion arcaniste',sk_ar_desc:'15% mort instantanée',sk_ar_tip:'15% / sinon ×3',
+    sk_bs:'Coup dans le dos',sk_bs_desc:'Critique garanti ×3',sk_bs_tip:'×3, critique forcé',
+    sk_sm:'Écran de fumée',sk_sm_desc:'Esquive +50% 2 tours',sk_sm_tip:'+50% esquive',
+    sk_po:'Poison',sk_po_desc:'Empoisonne l\'ennemi 3 tours',sk_po_tip:'10% atk/tour',
+    sk_ms:'Tir multiple',sk_ms_desc:'3 flèches, chacune peut critter',sk_ms_tip:'3×0.7, crit chacune',
+    sk_ai:'Tir visé',sk_ai_desc:'×2.5 dégâts, +30% crit',sk_ai_tip:'×2.5, crit+30%',
+    sk_eg:'Œil d\'aigle',sk_eg_desc:'Prochain coup critique garanti',sk_eg_tip:'Critique garanti',
+    log_appear:'Apparaît',log_tier:'Niveau',log_miniboss:'⚠ MINI-BOSS',log_boss_appear:'👑 LE SEIGNEUR DES TÉNÈBRES apparaît !',
+    log_warn_boss:'☠ BOSS FINAL — LE SEIGNEUR DES TÉNÈBRES EST ÉVEILLÉ !',log_warn_danger:'⚠ ATTENTION — UN ENNEMI DANGEREUX APPROCHE !',
+    log_killed:'vaincu !',log_fallen:'est tombé !',log_dodge:'ESQUIVÉ !',log_dmg:'dégâts',log_crit:'— CRIT !',log_crit2:'CRIT',
+    log_instakill:'MORT INSTANTANÉE !',log_stun:'étourdi !',log_slow:'ralenti — passe !',
+    log_enemy_atk:'attaque',log_enemy_dbl:'DOUBLE FRAPPE !',
+    log_poison_enemy:'brûle du poison',log_regen:'régénère',log_player_poison:'(poison)',
+    log_buff_atk:'Attaque +% pour # tours',log_buff_dodge:'Esquive +% pour # tours',log_buff_crit:'Prochain coup critique garanti !',
+    log_stun_res:'Ennemi étourdi !',log_slow_res:'Ennemi ralenti pour # tours !',log_poison_res:'Ennemi empoisonné (# tours) !',
+    log_loot:'Obtenu',log_xp:'+%XP XP (%/%)',log_levelup:'NIVEAU % ! PV et PM entièrement restaurés !',
+    log_picked:'a choisi',log_extra:'TOUR SUPPLÉMENTAIRE !',
+    stat_atk:'ATK',stat_def:'DEF',stat_crit:'CRIT',stat_dodge:'ESQ',stat_level:'NIVEAU',
+    res_win:'🏆 VICTOIRE !',res_lose:'💀 DÉFAITE',
+    res_win_sub:'DONJON VAINCU — LE SEIGNEUR DES TÉNÈBRES EST TOMBÉ !',res_lose_sub:'LES HÉROS SONT TOMBÉS...',
+    res_turns:'TOURS',res_dmg:'DÉGÂTS INFLIGÉS',res_crits:'COUPS CRITIQUES',res_kills:'ÉLIMINATIONS',
+    res_time:'⏱ TEMPS',res_min:'min',res_sec:'sec',lvlup_player:'⬆ % — NIVEAU % !',log_lvlup_picked:'a choisi',cd:'TC',
+  },
+  es:{skins:'TEMAS',skin_dark:'Oscuro',skin_light:'Claro',skin_neon:'Neón',skin_retro:'Retro',skin_sunset:'Atardecer',skin_deep:'Profundo',skin_ash:'Ceniza',lang_code:'ES',back_site:'Al sitio',rb_no_station:'— radio apagada —',btn_play:'Reproducir',btn_stop:'Parar',
+    setup_title:'⚔ DUNGEON CRAWLER',setup_sub:'RPG POR TURNOS · ELIGE MODO',
+    btn_1p:'⚔ UN JUGADOR',btn_2p:'⚔⚔ DOS JUGADORES',btn_start:'▶ INICIAR JUEGO',
+    player_label:'JUGADOR',name_placeholder:'Introduce el nombre...',class_label:'CLASE',hero_default:'Héroe',
+    intro_title:'📜 PRÓLOGO',btn_dungeon:'⚔ ENTRAR AL CALABOZO',
+    enemy_label:'ENEMIGO',actions_label:'ACCIONES',
+    result_replay:'↺ JUGAR DE NUEVO',lvlup_title:'⬆ ¡SUBIDA DE NIVEL!',lvlup_sub:'Elige una mejora de estadística',
+    badge_mob:'MOB',badge_miniboss:'MINI-JEFE',badge_boss:'JEFE FINAL',
+    class_warrior:'Guerrero',class_mage:'Mago',class_rogue:'Pícaro',class_archer:'Arquero',
+    desc_warrior:'Alta defensa y PV',desc_mage:'Daño y crítico altos',desc_rogue:'Crítico y esquiva altos',desc_archer:'Velocidad y precisión',
+    mp_warrior:'Stamina',mp_mage:'Maná',mp_rogue:'Energía',mp_archer:'Concentración',
+    intro_warrior:'Antaño un guardia fronterizo pacífico, viste cómo el Señor Oscuro engulló tu hogar en sombra y fuego. Único superviviente de tu guarnición, juraste sobre las ruinas: atravesar el calabozo, derrotar a sus siervos y matar al Señor.',
+    intro_mage:'Eres el guardián del Archivo del Conocimiento — el único que leyó la profecía sobre el despertar del Señor Oscuro. Cuando cayeron las torres de tu orden, recogiste los últimos pergaminos y marchaste al corazón de la oscuridad.',
+    intro_rogue:'Trabajabas para el Gremio de las Sombras — hasta que el Señor Oscuro lo destruyó junto con todos los que te importaban. La venganza es un plato frío, pero tú lo sirves con veneno y acero.',
+    intro_archer:'Los Hijos del Bosque te llamaban "El que nunca falla". Cuando el Señor Oscuro quemó el Bosque Eterno, juraste por cada árbol: tu flecha encontrará su corazón.',
+    intro_duo:'A tu lado —',intro_duo2:'Juntos sois más fuertes.',
+    mob_wolf:'Lobo salvaje',mob_rat:'Rata gigante',mob_boar:'Jabalí',mob_bat:'Murciélago',mob_spider:'Araña venenosa',mob_skeleton:'Esqueleto',
+    mob_gscout:'Goblin explorador',mob_gshaman:'Goblin chamán',mob_gbomber:'Goblin bombardero',mob_gberserker:'Goblin berserker',mob_garcher:'Goblin arquero',mob_gthief:'Goblin ladrón',
+    mob_owarrior:'Orco guerrero',mob_oshaman:'Orco chamán',mob_oberserker:'Orco berserker',mob_oguard:'Orco guardián',mob_osniper:'Orco francotirador',mob_opriestess:'Orco sacerdotisa',
+    mob_zombie:'Zombi',mob_ghost:'Fantasma',mob_bonerider:'Caballero de hueso',mob_lich:'Liche mago',mob_vampire:'Vampiro',mob_banshee:'Banshee',
+    mob_imp:'Diabillo',mob_fireimp:'Diabillo de fuego',mob_firedemon:'Demonio de fuego',mob_shadowdemon:'Demonio de sombra',mob_hellhound:'Perro del infierno',mob_chaosit:'Bestia del caos',
+    mob_dragonling:'Dragoncito',mob_lizardrider:'Caballero lagarto',mob_dragonguard:'Guardián dragón',mob_firedragon:'Dragón de fuego',mob_icedragon:'Dragón de hielo',mob_shadowdragon:'Dragón de sombra',
+    boss_goblinchieftain:'Jefe goblin',boss_orkberserker:'Orco berserker',boss_troll:'Trol',boss_fireelemental:'Elemental de fuego',boss_necromancer:'Nigromante',boss_wyvern:'Wyvern',
+    boss_darkmaster:'Señor Oscuro',
+    phase1_msg:'⚡ ¡EL SEÑOR OSCURO está furioso! ¡Daño +50%!',phase2_msg:'💀 ¡GOLPE DOBLE en agonía!',
+    loot_hppot:'Poción PV',loot_hppot_big:'PV grande',loot_mppot:'Poción PM',loot_mppot_big:'PM grande',
+    stat_agi:'Agilidad',stat_agi_desc:'+8% prob. crítico',stat_lck:'Suerte',stat_lck_desc:'+5% muerte instantánea',
+    stat_str:'Fuerza',stat_str_desc:'+25 PV, +15 recurso',stat_elm:'Elemento',stat_elm_desc:'+20% daño de habilidades',
+    sk_attack:'Ataque',sk_attack_hint:'Crít',sk_insta:'inst',
+    sk_sb:'Golpe de escudo',sk_sb_desc:'Aturde +50% daño',sk_sb_tip:'40% aturdimiento',
+    sk_wc:'Grito de guerra',sk_wc_desc:'Ataque +30% 2 turnos',sk_wc_tip:'+30% atk 2 turnos',
+    sk_cl:'Tajo',sk_cl_desc:'25% PV máx del enemigo',sk_cl_tip:'25% PV máx',
+    sk_fb:'Bola de fuego',sk_fb_desc:'×2.2 daño de fuego',sk_fb_tip:'×2.2 daño',
+    sk_is:'Pico de hielo',sk_is_desc:'Ralentiza 2 turnos',sk_is_tip:'Ralentización 2 turnos',
+    sk_ar:'Explosión arcana',sk_ar_desc:'15% muerte instantánea',sk_ar_tip:'15% / si no ×3',
+    sk_bs:'Apuñalar por la espalda',sk_bs_desc:'Crítico garantizado ×3',sk_bs_tip:'×3, crítico forzado',
+    sk_sm:'Cortina de humo',sk_sm_desc:'Esquiva +50% 2 turnos',sk_sm_tip:'+50% esquiva',
+    sk_po:'Veneno',sk_po_desc:'Envenena 3 turnos',sk_po_tip:'10% atk/turno',
+    sk_ms:'Disparo múltiple',sk_ms_desc:'3 flechas, cada una puede criticar',sk_ms_tip:'3×0.7, crit cada una',
+    sk_ai:'Disparo certero',sk_ai_desc:'×2.5 daño, +30% crítico',sk_ai_tip:'×2.5, crít+30%',
+    sk_eg:'Ojo de águila',sk_eg_desc:'Siguiente golpe crítico garantizado',sk_eg_tip:'Crítico garantizado',
+    log_appear:'Aparece',log_tier:'Nivel',log_miniboss:'⚠ MINI-JEFE',log_boss_appear:'👑 ¡EL SEÑOR OSCURO aparece!',
+    log_warn_boss:'☠ JEFE FINAL — ¡EL SEÑOR OSCURO HA DESPERTADO!',log_warn_danger:'⚠ ¡ATENCIÓN — UN ENEMIGO PELIGROSO SE ACERCA!',
+    log_killed:'¡derrotado!',log_fallen:'¡ha caído!',log_dodge:'¡ESQUIVADO!',log_dmg:'daño',log_crit:'¡— CRÍT!',log_crit2:'CRÍT',
+    log_instakill:'¡MUERTE INSTANTÁNEA!',log_stun:'¡aturdido!',log_slow:'ralentizado — ¡pasa!',
+    log_enemy_atk:'ataca',log_enemy_dbl:'¡GOLPE DOBLE!',
+    log_poison_enemy:'arde de veneno',log_regen:'regenera',log_player_poison:'(veneno)',
+    log_buff_atk:'Ataque +% por # turnos',log_buff_dodge:'Esquiva +% por # turnos',log_buff_crit:'¡Próximo golpe crítico garantizado!',
+    log_stun_res:'¡Enemigo aturdido!',log_slow_res:'¡Enemigo ralentizado # turnos!',log_poison_res:'¡Enemigo envenenado (# turnos)!',
+    log_loot:'Obtenido',log_xp:'+%XP XP (%/%)',log_levelup:'¡NIVEL %! PV y PM completamente restaurados.',
+    log_picked:'eligió',log_extra:'¡TURNO EXTRA!',
+    stat_atk:'ATK',stat_def:'DEF',stat_crit:'CRÍT',stat_dodge:'ESQ',stat_level:'NIVEL',
+    res_win:'🏆 ¡VICTORIA!',res_lose:'💀 DERROTA',
+    res_win_sub:'CALABOZO COMPLETADO — ¡EL SEÑOR OSCURO HA CAÍDO!',res_lose_sub:'LOS HÉROES HAN CAÍDO...',
+    res_turns:'TURNOS',res_dmg:'DAÑO INFLIGIDO',res_crits:'GOLPES CRÍTICOS',res_kills:'BAJAS',
+    res_time:'⏱ TIEMPO',res_min:'min',res_sec:'seg',lvlup_player:'⬆ % — ¡NIVEL %!',log_lvlup_picked:'eligió',cd:'CD',
+  },
+  ja:{skins:'スキン',skin_dark:'ダーク',skin_light:'ライト',skin_neon:'ネオン',skin_retro:'レトロ',skin_sunset:'サンセット',skin_deep:'ディープ',skin_ash:'アッシュ',lang_code:'JP',back_site:'サイトへ',rb_no_station:'— ラジオ停止中 —',btn_play:'再生',btn_stop:'停止',
+    setup_title:'⚔ ダンジョン クローラー',setup_sub:'ターン制RPG · モードを選択',
+    btn_1p:'⚔ 一人プレイ',btn_2p:'⚔⚔ 二人プレイ',btn_start:'▶ ゲームスタート',
+    player_label:'プレイヤー',name_placeholder:'名前を入力...',class_label:'クラス',hero_default:'勇者',
+    intro_title:'📜 プロローグ',btn_dungeon:'⚔ ダンジョンへ',
+    enemy_label:'敵',actions_label:'アクション',
+    result_replay:'↺ もう一度プレイ',lvlup_title:'⬆ レベルアップ！',lvlup_sub:'ステータスアップを選択',
+    badge_mob:'MOB',badge_miniboss:'ミニボス',badge_boss:'ラスボス',
+    class_warrior:'戦士',class_mage:'魔法使い',class_rogue:'盗賊',class_archer:'弓使い',
+    desc_warrior:'防御とHPが高い',desc_mage:'ダメージとクリットが高い',desc_rogue:'クリットと回避が高い',desc_archer:'速度と精度が高い',
+    mp_warrior:'スタミナ',mp_mage:'マナ',mp_rogue:'エネルギー',mp_archer:'集中力',
+    intro_warrior:'かつて平和な国境の守護者だったあなたは、闇の王が影と炎で故郷を飲み込むのを目撃した。駐屯地の唯一の生存者として廃墟に誓った：ダンジョンを制覇し、その下僕を倒し、王を討ち取ると。あなたの盾がこの地最後の希望。',
+    intro_mage:'あなたは知識の書庫の番人――闇の王の覚醒を予言した唯一の者。修道会の塔が倒れた時、最後の巻物を集めて闇の中心へ向かった。ダンジョンの深部にある力の源を破壊することでのみ、迫り来る黙示録を止められる。',
+    intro_rogue:'あなたは影の組合のために働いていた――闇の王がそれとあなたの大切な人すべてを滅ぼすまでは。復讐は冷たい料理、しかし毒と鋼で提供する。世界最強の存在を抹殺する契約？キャリア最高の仕事だ。',
+    intro_archer:'森の子らはあなたを「外したことがない者」と呼んだ。闇の王が永遠の森――あなたの民の故郷――を焼き払った時、すべての木に誓った：あなたの矢は彼の心臓を見つけると。道はしもべたちに満ちたダンジョンを通る。弓を引け。',
+    intro_duo:'あなたのそばに —',intro_duo2:'共に戦えば強い。',
+    mob_wolf:'野生の狼',mob_rat:'巨大ネズミ',mob_boar:'野生のイノシシ',mob_bat:'コウモリ',mob_spider:'毒蜘蛛',mob_skeleton:'スケルトン',
+    mob_gscout:'ゴブリン斥候',mob_gshaman:'ゴブリンシャーマン',mob_gbomber:'ゴブリン爆撃兵',mob_gberserker:'ゴブリンバーサーカー',mob_garcher:'ゴブリン弓使い',mob_gthief:'ゴブリン盗賊',
+    mob_owarrior:'オーク戦士',mob_oshaman:'オークシャーマン',mob_oberserker:'オークバーサーカー',mob_oguard:'オーク衛兵',mob_osniper:'オーク狙撃兵',mob_opriestess:'オーク女祭司',
+    mob_zombie:'ゾンビ',mob_ghost:'幽霊',mob_bonerider:'骨の騎士',mob_lich:'リッチ魔法使い',mob_vampire:'ヴァンパイア',mob_banshee:'バンシー',
+    mob_imp:'インプ',mob_fireimp:'炎のインプ',mob_firedemon:'炎の悪魔',mob_shadowdemon:'影の悪魔',mob_hellhound:'地獄の番犬',mob_chaosit:'混沌の獣',
+    mob_dragonling:'ドラゴンの子',mob_lizardrider:'トカゲ騎士',mob_dragonguard:'竜の衛兵',mob_firedragon:'炎のドラゴン',mob_icedragon:'氷のドラゴン',mob_shadowdragon:'影のドラゴン',
+    boss_goblinchieftain:'ゴブリン族長',boss_orkberserker:'オークバーサーカー',boss_troll:'トロル',boss_fireelemental:'炎の精霊',boss_necromancer:'ネクロマンサー',boss_wyvern:'ワイバーン',
+    boss_darkmaster:'闇の王',
+    phase1_msg:'⚡ 闇の王が激怒！ダメージ +50%！',phase2_msg:'💀 苦悶のダブルストライク！',
+    loot_hppot:'HPポーション',loot_hppot_big:'大HP',loot_mppot:'MPポーション',loot_mppot_big:'大MP',
+    stat_agi:'敏捷性',stat_agi_desc:'+8%クリット率',stat_lck:'運',stat_lck_desc:'+5%即死率',
+    stat_str:'力',stat_str_desc:'+25 HP, +15リソース',stat_elm:'属性',stat_elm_desc:'スキルダメージ+20%',
+    sk_attack:'攻撃',sk_attack_hint:'クリ',sk_insta:'即死',
+    sk_sb:'シールドバッシュ',sk_sb_desc:'スタン+50%ダメージ',sk_sb_tip:'40%スタン率',
+    sk_wc:'バトルクライ',sk_wc_desc:'攻撃+30% 2ターン',sk_wc_tip:'+30% ATK 2ターン',
+    sk_cl:'クリーブ',sk_cl_desc:'敵の最大HP25%',sk_cl_tip:'最大HP25%ダメージ',
+    sk_fb:'ファイアボール',sk_fb_desc:'×2.2炎ダメージ',sk_fb_tip:'×2.2ダメージ',
+    sk_is:'アイススパイク',sk_is_desc:'2ターン鈍化',sk_is_tip:'鈍化2ターン',
+    sk_ar:'アルカナバースト',sk_ar_desc:'15%即死率',sk_ar_tip:'15%/さもなくば×3',
+    sk_bs:'バックスタブ',sk_bs_desc:'確定クリ×3',sk_bs_tip:'×3,強制クリ',
+    sk_sm:'スモークスクリーン',sk_sm_desc:'回避+50% 2ターン',sk_sm_tip:'+50%回避',
+    sk_po:'ポイズン',sk_po_desc:'3ターン毒',sk_po_tip:'10%ATK/ターン',
+    sk_ms:'マルチショット',sk_ms_desc:'3矢、各クリ可能',sk_ms_tip:'3×0.7,各クリ',
+    sk_ai:'エイムドショット',sk_ai_desc:'×2.5+30%クリ',sk_ai_tip:'×2.5,クリ+30%',
+    sk_eg:'イーグルアイ',sk_eg_desc:'次撃確定クリ',sk_eg_tip:'確定クリ',
+    log_appear:'出現',log_tier:'ティア',log_miniboss:'⚠ ミニボス',log_boss_appear:'👑 闇の王が現れた！',
+    log_warn_boss:'☠ ラスボス — 闇の王が目覚めた！',log_warn_danger:'⚠ 注意 — 強敵が迫る！',
+    log_killed:'討伐！',log_fallen:'倒れた！',log_dodge:'回避！',log_dmg:'ダメージ',log_crit:'— クリット！',log_crit2:'クリ',
+    log_instakill:'即死！',log_stun:'スタン！',log_slow:'鈍化 — スキップ！',
+    log_enemy_atk:'が攻撃',log_enemy_dbl:'ダブルストライク！',
+    log_poison_enemy:'毒で燃えている',log_regen:'再生',log_player_poison:'(毒)',
+    log_buff_atk:'攻撃+% #ターン',log_buff_dodge:'回避+% #ターン',log_buff_crit:'次撃確定クリ！',
+    log_stun_res:'敵スタン！',log_slow_res:'敵を#ターン鈍化！',log_poison_res:'敵を毒状態(#ターン)！',
+    log_loot:'入手',log_xp:'+%XP XP (%/%)',log_levelup:'レベル%！HPとMPが全回復！',
+    log_picked:'が選択',log_extra:'追加ターン！',
+    stat_atk:'攻撃',stat_def:'防御',stat_crit:'クリ',stat_dodge:'回避',stat_level:'レベル',
+    res_win:'🏆 勝利！',res_lose:'💀 敗北',
+    res_win_sub:'ダンジョン制覇 — 闇の王を討伐！',res_lose_sub:'勇者たちは倒れた...',
+    res_turns:'ターン数',res_dmg:'与ダメージ',res_crits:'クリット数',res_kills:'撃破数',
+    res_time:'⏱ タイム',res_min:'分',res_sec:'秒',lvlup_player:'⬆ % — レベル%！',log_lvlup_picked:'が選択',cd:'CD',
+  },
+};
+let currentLang='ru';
+function t(key){return(I18N[currentLang]||I18N.ru)[key]||key;}
+function applyLang(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=t(el.dataset.i18n);});
+  const lb=document.getElementById('lang-btn');if(lb)lb.textContent=t('lang_code');
+  document.querySelectorAll('.lang-item').forEach(el=>el.classList.toggle('active',el.dataset.lang===currentLang));
+  // Rebuild setup cards if on setup screen
+  if(document.getElementById('screen-setup')?.classList.contains('active'))buildSetupCards();
+  // Soundbar
+  const rbBtn=document.getElementById('rb-playstop');
+  if(rbBtn){const playing=rbBtn.classList.contains('is-playing');rbBtn.textContent=(playing?'■ ':'▶ ')+t(playing?'btn_stop':'btn_play');}
+  const rbName=document.getElementById('rb-name');
+  if(rbName&&!rbCurrentStation)rbName.textContent=t('rb_no_station');
+  // Dynamic UI labels
+  const at=document.getElementById('actions-title');if(at)at.textContent=t('actions_label');
+  const el=document.getElementById('enemy-label-el');if(el)el.textContent=t('enemy_label');
+}
+function setLang(lang){currentLang=lang;localStorage.setItem(LANG_KEY,lang);applyLang();closeAllPanels();}
+function loadLang(){currentLang=localStorage.getItem(LANG_KEY)||'ru';applyLang();}
+
+// ── Header panel toggles ───────────────────────────────
+const PANELS=['skin-panel','lang-panel'];
+const PANEL_BTNS=['skin-btn','lang-btn'];
+function closeAllPanels(){PANELS.forEach(id=>{document.getElementById(id)?.classList.remove('open');});PANEL_BTNS.forEach(id=>{document.getElementById(id)?.classList.remove('active');});}
+function togglePanel(pid,bid){const open=document.getElementById(pid)?.classList.contains('open');closeAllPanels();if(!open){document.getElementById(pid)?.classList.add('open');document.getElementById(bid)?.classList.add('active');}}
+function toggleSkinPanel(){togglePanel('skin-panel','skin-btn');}
+function toggleLangPanel(){togglePanel('lang-panel','lang-btn');}
+document.addEventListener('click',e=>{if(!e.target.closest('.hdr-right'))closeAllPanels();});
+
+// ── Radio soundbar ─────────────────────────────────────
+let rbCurrentStation=null;
+let rbPlaying=false;
+const rbAudio=document.getElementById('rb-audio');
+
+// Try to load last played station from radio site's localStorage
+(function initSoundbar(){
+  try{
+    const favs=JSON.parse(localStorage.getItem('radiowaveFavs')||'[]');
+    const last=localStorage.getItem('radiowaveLastStation');
+    let st=last?JSON.parse(last):null;
+    if(!st&&favs.length)st=favs[0];
+    if(st){
+      rbCurrentStation=st;
+      document.getElementById('rb-name').textContent=st.name||'—';
+      document.getElementById('rb-sub').textContent=[st.countrycode,st.bitrate?st.bitrate+' kbps':''].filter(Boolean).join(' · ');
+      rbAudio.src=st.url_resolved||st.url||'';
+    }
+  }catch(e){}
+})();
+
+function rbToggle(){
+  const btn=document.getElementById('rb-playstop');
+  const eq=document.getElementById('rb-eq');
+  if(!rbCurrentStation){
+    // Try to grab any station
+    try{
+      const favs=JSON.parse(localStorage.getItem('radiowaveFavs')||'[]');
+      if(favs.length){rbCurrentStation=favs[0];rbAudio.src=rbCurrentStation.url_resolved||rbCurrentStation.url||'';document.getElementById('rb-name').textContent=rbCurrentStation.name||'—';}
+    }catch(e){}
+  }
+  if(!rbAudio.src||rbAudio.src==='about:blank'){document.getElementById('rb-name').textContent='Откройте радио и выберите станцию';return;}
+  if(rbPlaying){
+    rbAudio.pause();rbPlaying=false;
+    btn.classList.remove('is-playing');eq.classList.add('paused');
+    btn.textContent='▶ '+t('btn_play');
+  }else{
+    rbAudio.play().catch(()=>{});rbPlaying=true;
+    btn.classList.add('is-playing');eq.classList.remove('paused');
+    btn.textContent='■ '+t('btn_stop');
+  }
+}
+rbAudio.addEventListener('play',()=>{
+  rbPlaying=true;
+  const btn=document.getElementById('rb-playstop');
+  btn.classList.add('is-playing');btn.textContent='■ '+t('btn_stop');
+  document.getElementById('rb-eq').classList.remove('paused');
+});
+rbAudio.addEventListener('pause',()=>{
+  rbPlaying=false;
+  const btn=document.getElementById('rb-playstop');
+  btn.classList.remove('is-playing');btn.textContent='▶ '+t('btn_play');
+  document.getElementById('rb-eq').classList.add('paused');
+});
+
+// ── Classes ────────────────────────────────────────────
+const CLASSES={
+  warrior:{cls:'warrior',icon:'⚔️',hp:120,mp:40,atk:18,def:12,spd:8,crit:10,dodge:5,instakill:2,
+    skills:[
+      {id:'sb',icon:'🛡',mp:10,cd:2,cdLeft:0,exec:(a)=>({dmg:Math.floor(a*1.5),stun:Math.random()<0.4,msg:'🛡 '+t('sk_sb')})},
+      {id:'wc',icon:'📣',mp:15,cd:3,cdLeft:0,exec:(a)=>({dmg:0,buff:{stat:'atk',pct:0.3,turns:2},msg:'📣 '+t('sk_wc')})},
+      {id:'cl',icon:'💥',mp:20,cd:3,cdLeft:0,exec:(a,c)=>({dmg:Math.floor(c.enemyMaxHp*0.25),msg:'💥 '+t('sk_cl')})},
+    ]},
+  mage:{cls:'mage',icon:'🔮',hp:75,mp:120,atk:28,def:4,spd:10,crit:20,dodge:8,instakill:8,
+    skills:[
+      {id:'fb',icon:'🔥',mp:20,cd:2,cdLeft:0,exec:(a,c)=>({dmg:Math.floor(a*2.2*(1+c.elemBonus)),msg:'🔥 '+t('sk_fb')})},
+      {id:'is',icon:'❄️',mp:15,cd:2,cdLeft:0,exec:(a,c)=>({dmg:Math.floor(a*1.3*(1+c.elemBonus)),slow:2,msg:'❄️ '+t('sk_is')})},
+      {id:'ar',icon:'✨',mp:35,cd:4,cdLeft:0,exec:(a,c)=>{
+        if(Math.random()<0.15+c.luckBonus) return{dmg:c.enemyHp,instakill:true,msg:'✨ '+t('sk_ar')+' — '+t('log_instakill')};
+        return{dmg:Math.floor(a*3*(1+c.elemBonus)),msg:'✨ '+t('sk_ar')};
+      }},
+    ]},
+  rogue:{cls:'rogue',icon:'🗡️',hp:85,mp:60,atk:22,def:6,spd:16,crit:28,dodge:18,instakill:5,
+    skills:[
+      {id:'bs',icon:'🗡',mp:12,cd:2,cdLeft:0,exec:(a)=>({dmg:Math.floor(a*3),forceCrit:true,msg:'🗡 '+t('sk_bs')})},
+      {id:'sm',icon:'💨',mp:18,cd:3,cdLeft:0,exec:()=>({dmg:0,buff:{stat:'dodge',flat:50,turns:2},msg:'💨 '+t('sk_sm')})},
+      {id:'po',icon:'☠️',mp:20,cd:3,cdLeft:0,exec:(a)=>({dmg:Math.floor(a*0.8),poison:{dmg:Math.floor(a*0.1),turns:3},msg:'☠️ '+t('sk_po')})},
+    ]},
+  archer:{cls:'archer',icon:'🏹',hp:90,mp:50,atk:20,def:7,spd:14,crit:22,dodge:14,instakill:4,
+    skills:[
+      {id:'ms',icon:'🏹',mp:18,cd:2,cdLeft:0,exec:(a,c)=>{let tot=0,cr=0;for(let i=0;i<3;i++){let d=Math.floor(a*0.7);if(Math.random()<(c.critChance+c.agiBonus)/100){d=Math.floor(d*2);cr++;}tot+=d;}return{dmg:tot,msg:`🏹 ${t('sk_ms')} (${cr} ${t('log_crit2').toLowerCase()})`,skipCrit:true};}},
+      {id:'ai',icon:'🎯',mp:22,cd:3,cdLeft:0,exec:(a,c)=>{const cr=Math.random()<(c.critChance+30+c.agiBonus)/100;return{dmg:Math.floor(a*2.5*(cr?2:1)),isCrit:cr,msg:'🎯 '+t('sk_ai')};}},
+      {id:'eg',icon:'🦅',mp:15,cd:2,cdLeft:0,exec:()=>({dmg:0,buff:{stat:'nextCrit',turns:1},msg:'🦅 '+t('sk_eg')})},
+    ]},
+};
+
+// ── Mob tiers ─────────────────────────────────────────
+const MOB_TIERS=[
+  [{key:'mob_wolf',emoji:'🐺',hp:30,atk:8,def:2,xp:10},{key:'mob_rat',emoji:'🐀',hp:25,atk:6,def:1,xp:8},{key:'mob_boar',emoji:'🐗',hp:40,atk:10,def:3,xp:12},{key:'mob_bat',emoji:'🦇',hp:20,atk:7,def:0,xp:8},{key:'mob_spider',emoji:'🕷',hp:28,atk:9,def:1,xp:11,poison:2},{key:'mob_skeleton',emoji:'💀',hp:45,atk:11,def:4,xp:15}],
+  [{key:'mob_gscout',emoji:'👺',hp:55,atk:14,def:4,xp:20},{key:'mob_gshaman',emoji:'🧿',hp:50,atk:16,def:3,xp:22,poison:2},{key:'mob_gbomber',emoji:'💣',hp:45,atk:18,def:2,xp:22},{key:'mob_gberserker',emoji:'🪓',hp:65,atk:20,def:5,xp:25},{key:'mob_garcher',emoji:'🎯',hp:48,atk:17,def:3,xp:22},{key:'mob_gthief',emoji:'🎭',hp:52,atk:15,def:4,xp:20}],
+  [{key:'mob_owarrior',emoji:'⚔️',hp:90,atk:20,def:8,xp:32},{key:'mob_oshaman',emoji:'🌀',hp:75,atk:22,def:5,xp:34},{key:'mob_oberserker',emoji:'🪓',hp:110,atk:25,def:6,xp:38},{key:'mob_oguard',emoji:'🛡',hp:120,atk:16,def:12,xp:36},{key:'mob_osniper',emoji:'🏹',hp:80,atk:19,def:6,xp:32},{key:'mob_opriestess',emoji:'🔮',hp:85,atk:23,def:7,xp:36}],
+  [{key:'mob_zombie',emoji:'🧟',hp:130,atk:22,def:8,xp:44,regen:4},{key:'mob_ghost',emoji:'👻',hp:90,atk:26,def:5,xp:46},{key:'mob_bonerider',emoji:'🦴',hp:150,atk:20,def:14,xp:50},{key:'mob_lich',emoji:'💀',hp:100,atk:28,def:6,xp:48},{key:'mob_vampire',emoji:'🧛',hp:120,atk:25,def:9,xp:48,regen:8},{key:'mob_banshee',emoji:'👁',hp:95,atk:30,def:5,xp:50}],
+  [{key:'mob_imp',emoji:'😈',hp:160,atk:28,def:10,xp:58},{key:'mob_fireimp',emoji:'🔥',hp:140,atk:32,def:8,xp:60,fireatk:true},{key:'mob_firedemon',emoji:'🌋',hp:175,atk:30,def:12,xp:62,fireatk:true},{key:'mob_shadowdemon',emoji:'🌑',hp:155,atk:33,def:9,xp:62},{key:'mob_hellhound',emoji:'🐕',hp:145,atk:30,def:8,xp:58,poison:3},{key:'mob_chaosit',emoji:'⚡',hp:165,atk:34,def:10,xp:64}],
+  [{key:'mob_dragonling',emoji:'🐲',hp:200,atk:34,def:14,xp:74},{key:'mob_lizardrider',emoji:'🦎',hp:220,atk:30,def:18,xp:76},{key:'mob_dragonguard',emoji:'🐉',hp:240,atk:36,def:15,xp:80},{key:'mob_firedragon',emoji:'🔥',hp:260,atk:40,def:14,xp:84,fireatk:true},{key:'mob_icedragon',emoji:'❄️',hp:250,atk:38,def:16,xp:82},{key:'mob_shadowdragon',emoji:'🌑',hp:230,atk:42,def:12,xp:84}],
+];
+const MINIBOSSES=[
+  {key:'boss_goblinchieftain',emoji:'👺',type:'miniboss',hp:100,atk:16,def:6,xp:40},
+  {key:'boss_orkberserker',emoji:'👹',type:'miniboss',hp:140,atk:22,def:8,xp:55},
+  {key:'boss_troll',emoji:'🧌',type:'miniboss',hp:180,atk:18,def:12,xp:70,regen:8},
+  {key:'boss_fireelemental',emoji:'🌋',type:'miniboss',hp:150,atk:26,def:6,xp:80,fireatk:true},
+  {key:'boss_necromancer',emoji:'🧙',type:'miniboss',hp:160,atk:24,def:8,xp:90},
+  {key:'boss_wyvern',emoji:'🐉',type:'miniboss',hp:200,atk:28,def:10,xp:100},
+];
+const BOSS={key:'boss_darkmaster',emoji:'👑',type:'boss',hp:500,atk:38,def:18,xp:300,
+  phases:[{threshold:0.66,msgKey:'phase1_msg',atkMult:1.5},{threshold:0.33,msgKey:'phase2_msg',doubleAtk:true}]};
+function encName(enc){return t(enc.key)||enc.key;}
+
+const XP_TO_LEVEL=[60,80,100,120,150,180];
+
+function buildEncounterList(){
+  const list=[];
+  for(let tier=0;tier<MOB_TIERS.length;tier++){
+    const mobs=MOB_TIERS[tier].slice(); shuffle(mobs);
+    mobs.forEach(m=>list.push({...m,type:'mob',tier}));
+    list.push({...MINIBOSSES[tier]});
+  }
+  list.push({...BOSS});
+  return list;
+}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+// ── Loot ──────────────────────────────────────────────
+const LOOT=[
+  {key:'loot_hppot',  icon:'🧪',type:'heal',value:30,chance:0.30,desc:'+30 HP'},
+  {key:'loot_hppot_big',icon:'❤️',type:'heal',value:60,chance:0.12,desc:'+60 HP'},
+  {key:'loot_mppot',  icon:'💧',type:'mp',  value:25,chance:0.25,desc:'+25 MP'},
+  {key:'loot_mppot_big',icon:'🔵',type:'mp', value:50,chance:0.10,desc:'+50 MP'},
+];
+function rollLoot(enc){
+  const boss=enc.type==='miniboss'||enc.type==='boss';
+  return LOOT.filter(l=>Math.random()<(boss?l.chance*2.2:l.chance)).map(l=>({...l,name:t(l.key)}));
+}
+
+// ── Stat upgrades ─────────────────────────────────────
+const STAT_UPS=[
+  {id:'agi',icon:'⚡',nameKey:'stat_agi',descKey:'stat_agi_desc',apply:(p)=>{p.crit=Math.min(90,p.crit+8);p.agiBonus=(p.agiBonus||0)+8;}},
+  {id:'lck',icon:'🍀',nameKey:'stat_lck',descKey:'stat_lck_desc',apply:(p)=>{p.instakill=Math.min(40,p.instakill+5);p.luckBonus=(p.luckBonus||0)+0.05;}},
+  {id:'str',icon:'💪',nameKey:'stat_str',descKey:'stat_str_desc',apply:(p)=>{p.maxHp+=25;p.hp=Math.min(p.hp+25,p.maxHp);p.maxMp+=15;p.mp=Math.min(p.mp+15,p.maxMp);}},
+  {id:'elm',icon:'🌀',nameKey:'stat_elm',descKey:'stat_elm_desc',apply:(p)=>{p.elemBonus=(p.elemBonus||0)+0.2;}},
+];
+
+// ── Intros ────────────────────────────────────────────
+function getIntro(cls){return t('intro_'+cls);}
+
+
+// ── STATE ─────────────────────────────────────────────
+let G={};
+
+function resetGame(){G={};showScreen('setup');}
+
+function setPlayerCount(n){
+  G.playerCount=n;
+  document.getElementById('btn-1p').classList.toggle('active',n===1);
+  document.getElementById('btn-2p').classList.toggle('active',n===2);
+  buildSetupCards();
+}
+
+function buildSetupCards(){
+  const cont=document.getElementById('players-setup');
+  cont.innerHTML='';
+  for(let i=0;i<G.playerCount;i++){
+    const card=document.createElement('div');
+    card.className='player-card';
+    card.innerHTML=`<div class="player-label">${t('player_label')} ${i+1}</div>
+      <input class="name-input" id="name-${i}" type="text" placeholder="${t('name_placeholder')}" maxlength="16" value="${t('hero_default')} ${i+1}">
+      <div class="player-label" style="margin-bottom:8px">${t('class_label')}</div>
+      <div class="class-grid">${Object.keys(CLASSES).map(k=>`
+        <button class="class-btn${k==='warrior'?' selected':''}" data-class="${k}" data-player="${i}" onclick="selectClass(${i},'${k}')">
+          <span class="class-icon">${CLASSES[k].icon}</span><span class="class-name">${t('class_'+k)}</span><span class="class-desc">${t('desc_'+k)}</span>
+        </button>`).join('')}</div>`;
+    cont.appendChild(card);
+  }
+  G.selectedClasses=Array(G.playerCount).fill('warrior');
+}
+
+function selectClass(pi,cls){
+  G.selectedClasses[pi]=cls;
+  document.querySelectorAll(`[data-player="${pi}"]`).forEach(b=>b.classList.toggle('selected',b.dataset.class===cls));
+}
+
+function startGame(){
+  G.players=[];
+  for(let i=0;i<G.playerCount;i++){
+    const name=document.getElementById(`name-${i}`).value.trim()||`${t('hero_default')} ${i+1}`;
+    const cls=G.selectedClasses[i];
+    const base=CLASSES[cls];
+    G.players.push({
+      name,cls,classData:base,
+      hp:base.hp,maxHp:base.hp,mp:base.mp,maxMp:base.mp,
+      atk:base.atk,def:base.def,spd:base.spd,crit:base.crit,dodge:base.dodge,instakill:base.instakill,
+      skills:base.skills.map(s=>({...s,cdLeft:0})),
+      level:1,xp:0,xpMax:XP_TO_LEVEL[0],
+      agiBonus:0,luckBonus:0,elemBonus:0,
+      totalDmg:0,turns:0,crits:0,kills:0,
+      buffs:[],poison:null,nextCrit:false,alive:true,
+      inventory:[],
+    });
+  }
+  G.encounters=buildEncounterList();
+  G.encounterIdx=0;
+  G.turnOrder=0;
+  G.startTime=Date.now();
+  G.over=false;
+  G.lvlUpQueue=[];
+  showIntro();
+}
+
+function showIntro(){
+  const p0=G.players[0];
+  const names=G.players.map(p=>`<strong style="color:var(--accent)">${p.name}</strong>`).join(' & ');
+  let txt=`<strong>${p0.classData.icon} ${t('class_'+p0.cls).toUpperCase()}</strong><br><br>${t('intro_'+p0.cls)}`;
+  if(G.playerCount===2) txt+=`<br><br>${t('intro_duo')} ${G.players[1].name}, ${G.players[1].classData.icon} ${t('class_'+G.players[1].cls)}. ${t('intro_duo2')}`;
+  document.getElementById('intro-text').innerHTML=`${names} — ${txt}`;
+  showScreen('intro');
+}
+
+function enterDungeon(){
+  showScreen('game');
+  buildProgress();
+  loadEncounter(0);
+}
+
+// ── Encounter ─────────────────────────────────────────
+function loadEncounter(idx){
+  const enc=G.encounters[idx];
+  G.enemy={...enc,hp:enc.hp,maxHp:enc.hp,currentAtk:enc.atk,phaseTriggered:[],stunLeft:0,slowLeft:0};
+  const warn=document.getElementById('boss-warning');
+  warn.style.display=(enc.type==='miniboss'||enc.type==='boss')?'block':'none';
+  warn.textContent=enc.type==='boss'?t('log_warn_boss'):t('log_warn_danger');
+  renderEnemy(); renderPlayers(); buildProgress();
+  G.players[0].turns++;
+  setTurn(0);
+  if(enc.type==='boss') addLog(t('log_boss_appear'),'log-boss');
+  else if(enc.type==='miniboss') addLog(`${t('log_miniboss')}: ${enc.emoji} ${encName(enc)}!`,'log-event');
+  else addLog(`${enc.emoji} ${encName(enc)} — ${t('log_tier')} ${(enc.tier||0)+1}`,'log-event');
+}
+
+// ── Turn ──────────────────────────────────────────────
+function setTurn(pi){
+  G.turnOrder=pi;
+  const p=G.players[pi];
+  document.getElementById('turn-indicator').textContent=`${t('actions_label')}: ${p.name.toUpperCase()} (${t('class_'+p.cls)} · ${p.level})`;
+  document.querySelectorAll('.player-battle-card').forEach((c,i)=>c.classList.toggle('active-turn',i===pi));
+  buildActions(pi);
+}
+
+function nextTurn(){
+  let next=(G.turnOrder+1)%G.players.length,tries=0;
+  while(!G.players[next].alive&&tries<G.players.length){next=(next+1)%G.players.length;tries++;}
+  if(!G.players.some(p=>p.alive)){gameOver(false);return;}
+
+  if(next===0||G.playerCount===1){
+    enemyTurn(); if(G.over) return;
+    // Poison on enemy
+    if(G.enemy.poisonData){
+      G.enemy.hp=Math.max(0,G.enemy.hp-G.enemy.poisonData.dmg);
+      G.enemy.poisonData.turns--;
+      addLog(`☠️ ${G.enemy.name} ${t('log_poison_enemy')}: -${G.enemy.poisonData.dmg}`,'log-dmg');
+      if(G.enemy.poisonData.turns<=0) delete G.enemy.poisonData;
+      renderEnemy();
+      if(G.enemy.hp<=0){afterEnemyHit(G.turnOrder);return;}
+    }
+    // Troll regen
+    if(G.enemy.regen&&G.enemy.hp>0){
+      G.enemy.hp=Math.min(G.enemy.maxHp,G.enemy.hp+G.enemy.regen);
+      addLog(`🧌 ${encName(G.enemy)} ${t('log_regen')} +${G.enemy.regen} HP`,'log-heal');
+      renderEnemy();
+    }
+  }
+
+  tickBuffs(next);
+  if(G.lvlUpQueue.length>0){openLvlUp(G.lvlUpQueue.shift(),next);return;}
+  G.players[next].turns++;
+  setTurn(next);
+}
+
+function enemyTurn(){
+  const e=G.enemy;
+  if(!e||e.hp<=0) return;
+  if(e.stunLeft>0){e.stunLeft--;addLog(`${e.emoji} ${encName(e)} ${t('log_stun')}`,'log-miss');return;}
+  if(e.slowLeft>0&&Math.random()<0.5){e.slowLeft--;addLog(`${e.emoji} ${encName(e)} ${t('log_slow')}`,'log-miss');return;}
+  if(e.slowLeft>0) e.slowLeft--;
+
+  const targets=G.players.filter(p=>p.alive);
+  if(!targets.length) return;
+  const target=targets.reduce((a,b)=>a.hp<b.hp?a:b);
+  const dbl=e.phases&&e.phaseTriggered.includes(1)&&e.type==='boss';
+
+  const hit=()=>{
+    if(Math.random()<target.dodge/100){addLog(`${e.emoji} ${t('log_enemy_atk')} ${target.name} — ${t('log_dodge')}`,'log-miss');return;}
+    let dmg=Math.max(1,e.currentAtk-target.def+randInt(-2,3));
+    if(e.fireatk) dmg=Math.floor(dmg*1.2);
+    target.hp=Math.max(0,target.hp-dmg);
+    addLog(`${e.emoji} ${encName(e)} → ${target.name}: <span class="log-dmg">${dmg} ${t('log_dmg')}</span>`,'log-enemy');
+    renderPlayers();
+    if(target.hp<=0){target.alive=false;target.hp=0;addLog(`💀 ${target.name} ${t('log_fallen')}`,'log-dead');renderPlayers();if(!G.players.some(p=>p.alive))gameOver(false);}
+  };
+  hit();
+  if(dbl&&!G.over) setTimeout(()=>{addLog(`${e.emoji} ${t('log_enemy_dbl')}`,'log-boss');hit();},300);
+}
+
+function tickBuffs(pi){
+  const p=G.players[pi];
+  if(p.poison&&p.poison.turns>0){p.hp=Math.max(1,p.hp-p.poison.dmg);p.poison.turns--;addLog(`☠️ ${p.name}: -${p.poison.dmg} HP ${t('log_player_poison')}`,'log-dmg');if(!p.poison.turns)p.poison=null;renderPlayers();}
+  p.buffs=p.buffs.filter(b=>{b.turns--;if(b.turns<=0){if(b.stat==='atk')p.atk=p.classData.atk;if(b.stat==='dodge')p.dodge=p.classData.dodge;return false;}return true;});
+  p.skills.forEach(s=>{if(s.cdLeft>0)s.cdLeft--;});
+}
+
+// ── Actions ───────────────────────────────────────────
+function buildActions(pi){
+  const p=G.players[pi];
+  const grid=document.getElementById('actions-grid');
+  document.getElementById('actions-title').textContent=`${t('actions_label')}: ${p.name} · ${t('mp_'+p.cls)} ${p.mp}/${p.maxMp}`;
+  grid.innerHTML='';
+
+  const aa=mkBtn('action-btn','⚔️',t('sk_attack'),`${t('sk_attack_hint')}: ${p.crit}% | ${t('sk_insta')}: ${p.instakill}%`);
+  aa.onclick=()=>doBasicAttack(pi);
+  grid.appendChild(aa);
+
+  p.skills.forEach((sk,si)=>{
+    const ok=p.mp>=sk.mp&&sk.cdLeft===0;
+    const btn=mkBtn('action-btn skill-btn',sk.icon,t('sk_'+sk.id),`${t('mp_'+p.cls)}: ${sk.mp}${sk.cdLeft>0?' · '+t('cd')+':'+sk.cdLeft:''}`);
+    btn.disabled=!ok;
+    if(sk.cdLeft>0) btn.innerHTML+=`<span class="cd-badge">${t('cd')}: ${sk.cdLeft}</span>`;
+    btn.onclick=()=>doSkill(pi,si);
+    grid.appendChild(btn);
+  });
+
+  p.inventory.forEach((item,ii)=>{
+    const btn=mkBtn('action-btn item-btn',item.icon,item.name,item.desc);
+    btn.onclick=()=>useItem(pi,ii);
+    grid.appendChild(btn);
+  });
+}
+
+function mkBtn(cls,icon,name,hint){
+  const b=document.createElement('button');b.className=cls;
+  b.innerHTML=`<span class="action-icon">${icon}</span><span class="action-name">${name}</span><span class="action-hint">${hint}</span>`;
+  return b;
+}
+
+function useItem(pi,ii){
+  const p=G.players[pi];const it=p.inventory.splice(ii,1)[0];
+  if(it.type==='heal'){p.hp=Math.min(p.maxHp,p.hp+it.value);addLog(`🧪 ${p.name}: <span class="log-heal">+${it.value} HP</span> (${it.name})`,'log-heal');}
+  if(it.type==='mp')  {p.mp=Math.min(p.maxMp,p.mp+it.value);addLog(`💧 ${p.name}: <span class="log-heal">+${it.value} MP</span> (${it.name})`,'log-heal');}
+  renderPlayers();nextTurn();
+}
+
+function doBasicAttack(pi){
+  const p=G.players[pi],e=G.enemy;
+  if(Math.random()<p.instakill/100){
+    addLog(`💥 ${p.name} — <span class="log-crit">${t('log_instakill')}</span>`,'log-crit');
+    giveXP(pi,e.xp);p.totalDmg+=e.hp;p.kills++;e.hp=0;renderEnemy();afterEnemyHit(pi);return;
+  }
+  let dmg=Math.max(1,p.atk-e.def+randInt(-2,3));
+  let crit=p.nextCrit||Math.random()<p.crit/100;p.nextCrit=false;
+  if(crit){dmg=Math.floor(dmg*2);p.crits++;}
+  const extra=Math.random()<p.spd/100;
+  p.totalDmg+=dmg;e.hp=Math.max(0,e.hp-dmg);
+  addLog(`${p.classData.icon} ${p.name}: <span class="${crit?'log-crit':'log-dmg'}">${dmg} ${t('log_dmg')}${crit?' '+t('log_crit'):''}</span>`);
+  if(extra) addLog(`⚡ ${p.name} — ${t('log_extra')}`,'log-event');
+  renderEnemy();checkPhase();
+  if(e.hp<=0){giveXP(pi,e.xp);afterEnemyHit(pi);return;}
+  if(extra){buildActions(pi);return;}
+  nextTurn();
+}
+
+function doSkill(pi,si){
+  const p=G.players[pi],sk=p.skills[si],e=G.enemy;
+  if(p.mp<sk.mp||sk.cdLeft>0) return;
+  p.mp-=sk.mp;sk.cdLeft=sk.cd;
+  const ctx={critChance:p.crit,agiBonus:p.agiBonus||0,luckBonus:p.luckBonus||0,elemBonus:p.elemBonus||0,enemyHp:e.hp,enemyMaxHp:e.maxHp};
+  const res=sk.exec(p.atk,ctx);
+  addLog(`${p.classData.icon} ${p.name}: ${res.msg}`,'log-event');
+  if(res.instakill){giveXP(pi,e.xp);p.totalDmg+=e.hp;p.kills++;e.hp=0;renderEnemy();afterEnemyHit(pi);return;}
+  if(res.dmg>0){if(res.forceCrit||res.isCrit)p.crits++;p.totalDmg+=res.dmg;e.hp=Math.max(0,e.hp-res.dmg);addLog(`   ↳ <span class="log-dmg">${res.dmg}${res.forceCrit||res.isCrit?' ('+t('log_crit2')+')':''}</span>`);}
+  if(res.buff){
+    const b=res.buff;
+    if(b.stat==='atk'){p.atk=Math.floor(p.atk*(1+b.pct));p.buffs.push({stat:'atk',turns:b.turns});addLog(`   ↳ ${t('log_buff_atk').replace('%',Math.round(b.pct*100)).replace('#',b.turns)}`,'log-heal');}
+    if(b.stat==='dodge'){p.dodge=Math.min(90,p.dodge+b.flat);p.buffs.push({stat:'dodge',turns:b.turns});addLog(`   ↳ ${t('log_buff_dodge').replace('%',b.flat).replace('#',b.turns)}`,'log-heal');}
+    if(b.stat==='nextCrit'){p.nextCrit=true;addLog(`   ↳ ${t('log_buff_crit')}`,'log-heal');}
+  }
+  if(res.stun){e.stunLeft=1;addLog(`   ↳ ${t('log_stun_res')}`,'log-event');}
+  if(res.slow){e.slowLeft=res.slow;addLog(`   ↳ ${t('log_slow_res').replace('#',res.slow)}`,'log-event');}
+  if(res.poison){e.poisonData=res.poison;addLog(`   ↳ ${t('log_poison_res').replace('#',res.poison.turns)}`,'log-event');}
+  renderEnemy();renderPlayers();checkPhase();
+  if(e.hp<=0){giveXP(pi,e.xp);afterEnemyHit(pi);return;}
+  nextTurn();
+}
+
+// ── After kill ────────────────────────────────────────
+function afterEnemyHit(pi){
+  const e=G.enemy,p=G.players[pi];p.kills++;
+  document.getElementById('enemy-block').classList.add('defeated');
+  setTimeout(()=>document.getElementById('enemy-block').classList.remove('defeated'),500);
+  addLog(`🏆 ${e.emoji} ${encName(e)} ${t('log_killed')}`,'log-win');
+  renderEnemy();
+  const loot=rollLoot(e);
+  if(loot.length){
+    const recv=G.players.filter(pl=>pl.alive).reduce((a,b)=>a.hp<b.hp?a:b);
+    loot.forEach(it=>{recv.inventory.push(it);addLog(`💰 ${t('log_loot')}: ${it.icon} ${it.name} → ${recv.name}`,'log-loot');});
+  }
+  G.players.forEach(pl=>{if(pl.alive)pl.mp=Math.min(pl.maxMp,pl.mp+10);});
+  G.encounterIdx++;
+  if(G.encounterIdx>=G.encounters.length) gameOver(true);
+  else setTimeout(()=>loadEncounter(G.encounterIdx),800);
+}
+
+// ── XP & Level up ─────────────────────────────────────
+function giveXP(pi,amt){
+  const p=G.players[pi];
+  if(p.level>XP_TO_LEVEL.length) return;
+  p.xp+=amt;
+  addLog(`✨ ${p.name} +${amt} XP (${p.xp}/${p.xpMax})`,'log-event');
+  if(p.xp>=p.xpMax){
+    p.xp-=p.xpMax;
+    const ni=Math.min(p.level,XP_TO_LEVEL.length-1);
+    p.xpMax=XP_TO_LEVEL[ni];
+    p.level++;p.hp=p.maxHp;p.mp=p.maxMp;
+    addLog(`⬆ ${p.name} — ${t('log_levelup').replace('%',p.level)}`,'log-lvl');
+    G.lvlUpQueue.push(pi);
+  }
+  renderPlayers();
+}
+
+function openLvlUp(pi,resumeIdx){
+  G.lvlUpResume=resumeIdx;G.lvlUpPlayer=pi;
+  const p=G.players[pi];
+  document.getElementById('lvl-modal-title').textContent=`⬆ ${p.name} — ${t('stat_level')} ${p.level}!`;
+  const cont=document.getElementById('stat-choices');cont.innerHTML='';
+  STAT_UPS.forEach(u=>{
+    const btn=document.createElement('button');btn.className='stat-choice';
+    btn.innerHTML=`<span class="sc-icon">${u.icon}</span><span class="sc-name">${t(u.nameKey)}</span><span class="sc-desc">${t(u.descKey)}</span>`;
+    btn.onclick=()=>pickStat(pi,u);
+    cont.appendChild(btn);
+  });
+  document.getElementById('lvl-modal').classList.add('open');
+}
+
+function pickStat(pi,u){
+  const p=G.players[pi];
+  u.apply(p);
+  addLog(`⭐ ${p.name} ${t('log_lvlup_picked')}: ${u.icon} ${t(u.nameKey)}`,'log-lvl');
+  document.getElementById('lvl-modal').classList.remove('open');
+  renderPlayers();
+  if(G.lvlUpQueue.length>0){openLvlUp(G.lvlUpQueue.shift(),G.lvlUpResume);return;}
+  G.players[G.lvlUpResume].turns++;
+  setTurn(G.lvlUpResume);
+}
+
+// ── Phase check ───────────────────────────────────────
+function checkPhase(){
+  const e=G.enemy;if(!e.phases) return;
+  const pct=e.hp/e.maxHp;
+  e.phases.forEach((ph,i)=>{
+    if(pct<=ph.threshold&&!e.phaseTriggered.includes(i)){
+      e.phaseTriggered.push(i);addLog(t(ph.msgKey),'log-boss');
+      if(ph.atkMult) e.currentAtk=Math.floor(e.atk*ph.atkMult);
+    }
+  });
+}
+
+// ── Render ────────────────────────────────────────────
+function renderEnemy(){
+  const e=G.enemy;
+  document.getElementById('enemy-emoji').textContent=e.emoji;
+  document.getElementById('enemy-name').textContent=encName(e);
+  document.getElementById('enemy-hp-text').textContent=`${Math.max(0,e.hp)} / ${e.maxHp}`;
+  const pct=Math.max(0,e.hp/e.maxHp*100);
+  const bar=document.getElementById('enemy-hp-bar');
+  bar.style.width=pct+'%';bar.className='hp-bar-fill hp-fill-enemy'+(pct<25?' hp-fill-low':'');
+  const badge=document.getElementById('enemy-badge');
+  badge.className='enemy-type-badge badge-'+(e.type==='boss'?'boss':e.type==='miniboss'?'miniboss':'mob');
+  badge.textContent=e.type==='boss'?t('badge_boss'):e.type==='miniboss'?t('badge_miniboss'):t('badge_mob');
+}
+
+function renderPlayers(){
+  const row=document.getElementById('players-row');row.innerHTML='';
+  G.players.forEach((p,i)=>{
+    const card=document.createElement('div');
+    card.className='player-battle-card'+(i===G.turnOrder?' active-turn':'')+(!p.alive?' dead':'');
+    const hpP=Math.max(0,p.hp/p.maxHp*100),mpP=Math.max(0,p.mp/p.maxMp*100),xpP=Math.max(0,p.xp/p.xpMax*100);
+    const bufs=p.buffs.map(b=>b.stat==='atk'?'⚔+':b.stat==='dodge'?'💨+':'').join('')+(p.nextCrit?'🎯':'')+(p.poison?'☠️':'');
+    const inv=p.inventory.map(it=>it.icon).join('');
+    card.innerHTML=`
+      <div class="pb-name">${p.classData.icon} ${p.name} ${bufs} ${inv}</div>
+      <div class="pb-level">${t('stat_level')} ${p.level}</div>
+      <div class="pb-class">${t('class_'+p.cls).toUpperCase()}</div>
+      <div class="hp-bar-wrap"><div class="hp-bar-label"><span>HP</span><span>${p.hp}/${p.maxHp}</span></div><div class="hp-bar-track"><div class="hp-bar-fill hp-fill-player${hpP<25?' hp-fill-low':''}" style="width:${hpP}%"></div></div></div>
+      <div class="hp-bar-wrap"><div class="hp-bar-label"><span style="color:#b87fff">${t('mp_'+p.cls)}</span><span>${p.mp}/${p.maxMp}</span></div><div class="hp-bar-track"><div class="hp-bar-fill mana-fill" style="width:${mpP}%"></div></div></div>
+      <div class="hp-bar-wrap"><div class="hp-bar-label"><span style="color:var(--accent3)">XP</span><span>${p.xp}/${p.xpMax}</span></div><div class="hp-bar-track"><div class="hp-bar-fill xp-fill" style="width:${xpP}%"></div></div></div>
+      <div class="pb-stats">
+        <div class="pb-stat">${t('stat_atk')}:<span>${p.atk}</span></div>
+        <div class="pb-stat">${t('stat_def')}:<span>${p.def}</span></div>
+        <div class="pb-stat">${t('stat_crit')}:<span>${p.crit}%</span></div>
+        <div class="pb-stat">${t('stat_dodge')}:<span>${p.dodge}%</span></div>
+      </div>`;
+    row.appendChild(card);
+  });
+}
+
+function buildProgress(){
+  const cont=document.getElementById('dungeon-progress');cont.innerHTML='';
+  G.encounters.forEach((enc,i)=>{
+    const d=document.createElement('div');
+    d.className='dp-dot'+(enc.type==='miniboss'?' miniboss':'')+(enc.type==='boss'?' boss-dot':'')+(i<G.encounterIdx?' done':'')+(i===G.encounterIdx?' current':'');
+    d.title=encName(enc);cont.appendChild(d);
+  });
+}
+
+// ── Log ───────────────────────────────────────────────
+function addLog(html,cls=''){
+  const log=document.getElementById('battle-log');
+  const line=document.createElement('div');line.className='log-line '+cls;line.innerHTML=html;
+  log.appendChild(line);log.scrollTop=log.scrollHeight;
+}
+
+// ── Game over ─────────────────────────────────────────
+function gameOver(win){
+  G.over=true;
+  const el=Math.floor((Date.now()-G.startTime)/1000);
+  const mn=Math.floor(el/60),sc=el%60;
+  showScreen('results');
+  document.getElementById('result-title').textContent=win?t('res_win'):t('res_lose');
+  document.getElementById('result-title').style.color=win?'var(--accent3)':'var(--accent2)';
+  document.getElementById('result-sub').textContent=win?t('res_win_sub'):t('res_lose_sub');
+  let body='';
+  G.players.forEach(p=>{
+    body+=`<div class="result-player">
+      <div class="result-pname">${p.classData.icon} ${p.name} — ${t('class_'+p.cls).toUpperCase()} · ${t('stat_level')} ${p.level}</div>
+      <div class="result-stats">
+        <div class="result-stat"><div class="result-stat-label">${t('res_turns')}</div><div class="result-stat-val">${p.turns}</div></div>
+        <div class="result-stat"><div class="result-stat-label">${t('res_dmg')}</div><div class="result-stat-val">${p.totalDmg}</div></div>
+        <div class="result-stat"><div class="result-stat-label">${t('res_crits')}</div><div class="result-stat-val">${p.crits}</div></div>
+        <div class="result-stat"><div class="result-stat-label">${t('res_kills')}</div><div class="result-stat-val">${p.kills}</div></div>
+      </div></div>`;
+  });
+  document.getElementById('results-body').innerHTML=body;
+  document.getElementById('result-time').innerHTML=`${t('res_time')}: <span>${mn} ${t('res_min')} ${sc} ${t('res_sec')}</span> (${el} ${t('res_sec')})`;
+}
+
+// ── Utils ─────────────────────────────────────────────
+function showScreen(n){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+n).classList.add('active');}
+function randInt(a,b){return a+Math.floor(Math.random()*(b-a+1));}
+window.addEventListener('DOMContentLoaded',()=>{loadSkin();loadLang();setPlayerCount(1);});
+</script>
+</body>
+</html>
