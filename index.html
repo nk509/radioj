@@ -155,6 +155,9 @@ select option { background: #111827; }
   overflow: hidden;
 }
 .modal-overlay.open .modal { transform: translateY(0); }
+@media (max-width: 679px) {
+  .modal { margin-bottom: 120px; max-height: calc(100vh - 200px); }
+}
 
 .modal-header {
   padding: 16px 20px 14px;
@@ -266,6 +269,31 @@ select option { background: #111827; }
 }
 .save-tags-btn:hover { background: rgba(0,229,255,0.16); box-shadow: 0 0 12px rgba(0,229,255,0.25); }
 
+/* ── Mobile-only ←→ reorder buttons under tag chips ── */
+.tag-chip-reorder { display: none; }
+@media (max-width: 679px) {
+  .tag-chip-edit {
+    flex-direction: column; align-items: flex-start; gap: 4px;
+    border-radius: 10px; padding: 5px 8px;
+  }
+  .tag-chip-edit-top {
+    display: flex; align-items: center; gap: 5px; width: 100%;
+  }
+  .tag-chip-reorder {
+    display: flex; flex-direction: row; gap: 4px; width: 100%;
+  }
+  .tag-chip-reorder button {
+    background: transparent; border: 1px solid var(--border); border-radius: 3px;
+    color: var(--muted); font-size: 0.6rem; line-height: 1;
+    flex: 1; height: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .tag-chip-reorder button:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }
+  .tag-chip-reorder button:disabled { opacity: 0.2; cursor: default; }
+  .drag-handle { display: none; }
+}
+
 /* ── Chat block ───────────────────────────────── */
 .chat-section {
   width: 60%;
@@ -316,7 +344,7 @@ select option { background: #111827; }
   height: 240px;
   overflow-y: auto;
   padding: 8px 12px;
-  display: flex; flex-direction: column; gap: 3px;
+  display: flex; flex-direction: column; gap: 18px;
   scroll-behavior: smooth;
 }
 .chat-messages::-webkit-scrollbar { width: 4px; }
@@ -328,13 +356,16 @@ select option { background: #111827; }
   display: flex; flex-direction: column; gap: 1px;
   max-width: 80%;
 }
-.chat-msg.mine { align-self: flex-end; align-items: flex-end; }
+.chat-msg.mine  { align-self: flex-start; align-items: flex-start; }
 .chat-msg.theirs { align-self: flex-start; align-items: flex-start; }
 
-/* Desktop: all messages left-aligned, nick left of bubble */
+@media (max-width: 679px) {
+  .chat-msg.mine { align-self: flex-end; align-items: flex-end; }
+}
+
+/* Desktop: all messages left-aligned */
 @media (min-width: 680px) {
   .chat-msg { max-width: 92%; }
-  .chat-msg.mine { align-self: flex-start; align-items: flex-start; }
   .chat-msg.mine .chat-msg-bubble { border-radius: 10px 10px 10px 2px; }
   .chat-msg-header {
     display: flex; align-items: baseline; gap: 6px; width: 100%;
@@ -396,8 +427,10 @@ select option { background: #111827; }
   font-size: 0.75rem; line-height: 1.4;
   word-break: break-word;
 }
-.chat-msg.mine  .chat-msg-bubble { background: rgba(0,229,255,0.1); border: 1px solid rgba(0,229,255,0.2); color: var(--text); border-radius: 10px 10px 2px 10px; }
+.chat-msg.mine  .chat-msg-bubble { background: rgba(255,60,172,0.13); border: 1px solid rgba(255,60,172,0.3); color: var(--text); border-radius: 10px 10px 10px 2px; }
 .chat-msg.theirs .chat-msg-bubble { background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text); border-radius: 10px 10px 10px 2px; }
+.chat-msg.mine .chat-msg-nick { color: var(--accent); }
+.chat-msg.mine .chat-msg-time  { color: rgba(0,229,255,0.6); }
 
 /* bubble + time wrapper */
 .chat-bubble-row {
@@ -413,36 +446,77 @@ select option { background: #111827; }
     align-items: flex-end;
     gap: 6px;
   }
-  /* Nick row: nick on left, time pushed right */
-  .chat-msg-meta {
-    display: flex;
-    align-items: baseline;
-    gap: 4px;
-    width: 100%;
-    justify-content: space-between;
-    margin-bottom: 2px;
-  }
 }
 
 .chat-msg-time {
-  font-size: 0.52rem; color: rgba(255,60,172,0.75); letter-spacing: 0.04em;
+  color: rgba(255,60,172,0.75); letter-spacing: 0.04em;
   white-space: nowrap; flex-shrink: 0;
 }
 
-/* Chat meta row (nick + time) */
+/* Chat meta row — nick · time · reply btn, all same size */
 .chat-msg-meta {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
+  align-items: stretch;
   gap: 6px;
   width: 100%;
   margin-bottom: 2px;
 }
-
-/* On mobile: hide time in meta, show only nick */
-@media (max-width: 679px) {
-  .chat-msg-meta .chat-msg-time { display: none; }
+.chat-msg-meta .chat-msg-nick,
+.chat-msg-meta .chat-msg-time,
+.chat-msg-meta .chat-reply-btn {
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  font-weight: 600;
+  line-height: 1;
+  height: auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  vertical-align: middle;
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
 }
+
+/* Reply button */
+.chat-reply-btn {
+  cursor: pointer;
+  color: rgba(255,60,172,0.45);
+  opacity: 1; transition: color 0.15s;
+  flex-shrink: 0;
+}
+.chat-reply-btn:hover { color: var(--accent2); }
+
+/* Reply quote block inside bubble */
+.chat-reply-quote {
+  border-left: 2px solid var(--accent2);
+  padding: 3px 7px;
+  margin-bottom: 5px;
+  border-radius: 0 4px 4px 0;
+  background: rgba(255,60,172,0.07);
+  font-size: 0.62rem; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 100%;
+}
+.chat-reply-quote strong { color: var(--accent2); margin-right: 4px; }
+
+/* Reply preview above input */
+.chat-reply-preview {
+  display: none; align-items: center; gap: 6px;
+  padding: 4px 10px; background: rgba(255,60,172,0.07);
+  border-top: 1px solid rgba(255,60,172,0.2);
+  font-size: 0.6rem; color: var(--muted);
+  font-family: var(--font-head); letter-spacing: 0.04em;
+}
+.chat-reply-preview.show { display: flex; }
+.chat-reply-preview-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat-reply-preview-text strong { color: var(--accent2); margin-right: 4px; }
+.chat-reply-cancel {
+  background: transparent; border: none; cursor: pointer;
+  color: var(--muted); font-size: 0.8rem; padding: 0 2px;
+  transition: color 0.15s; flex-shrink: 0;
+}
+.chat-reply-cancel:hover { color: var(--accent2); }
 
 /* System messages */
 .chat-sys {
@@ -461,16 +535,28 @@ select option { background: #111827; }
   bottom: 0;
   background: var(--surface);
   z-index: 2;
+  transition: filter 0.2s, opacity 0.2s;
+}
+.chat-input-row.blurred {
+  filter: blur(4px);
+  opacity: 0.35;
+  pointer-events: none;
 }
 .chat-nick-input {
-  width: 80px; flex-shrink: 0;
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: 6px; color: var(--muted);
+  width: 80px; flex-shrink: 0; align-self: stretch;
+  background: var(--bg2); border: 1px solid rgba(255,60,172,0.3);
+  border-radius: 6px; color: var(--accent2);
   font-family: var(--font-head); font-size: 0.58rem;
-  letter-spacing: 0.06em; padding: 7px 8px;
-  outline: none; transition: border-color 0.2s;
+  letter-spacing: 0.06em; padding: 0 8px;
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s, color 0.2s;
+  text-shadow: 0 0 8px rgba(255,60,172,0.4);
 }
-.chat-nick-input:focus { border-color: rgba(0,229,255,0.3); color: var(--text); }
+.chat-nick-input::placeholder { color: rgba(255,60,172,0.35); }
+.chat-nick-input:focus {
+  border-color: var(--accent2);
+  box-shadow: 0 0 10px rgba(255,60,172,0.25);
+  color: var(--accent2);
+}
 .chat-text-input {
   flex: 1;
   background: var(--bg2); border: 1px solid var(--border);
@@ -1089,6 +1175,7 @@ input[type=range]::-moz-range-thumb {
   background: rgba(255,60,172,0.08);
 }
 .np-fav.active:hover { transform: scale(1.1); }
+@media (max-width: 679px) { #controls-fav { display: none; } }
 
 /* ── Favourites load button in controls ──────── */
 .fav-btn {
@@ -1119,6 +1206,80 @@ input[type=range]::-moz-range-thumb {
   font-size: 0.55rem;
   min-width: 18px;
   text-align: center;
+}
+
+/* Fav dropdown */
+.fav-dropdown-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.fav-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 240px;
+  max-width: 300px;
+  background: var(--surface);
+  border: 1px solid rgba(255,60,172,0.35);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 20px rgba(255,60,172,0.1);
+  z-index: 200;
+  overflow: hidden;
+  display: none;
+  flex-direction: column;
+}
+.fav-dropdown.open { display: flex; }
+.fav-dropdown-header {
+  padding: 8px 12px;
+  font-family: var(--font-head); font-size: 0.55rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--accent2); border-bottom: 1px solid rgba(255,60,172,0.15);
+}
+.fav-dropdown-list {
+  overflow-y: auto; max-height: 260px;
+}
+.fav-dropdown-list::-webkit-scrollbar { width: 3px; }
+.fav-dropdown-list::-webkit-scrollbar-track { background: transparent; }
+.fav-dropdown-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.fav-dropdown-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: background 0.15s;
+}
+.fav-dropdown-item:last-child { border-bottom: none; }
+.fav-dropdown-item:hover { background: rgba(255,60,172,0.08); }
+.fav-dropdown-item.playing { background: rgba(255,60,172,0.12); }
+.fav-dropdown-logo {
+  width: 28px; height: 28px; border-radius: 5px;
+  object-fit: contain; background: rgba(0,0,0,0.3);
+  flex-shrink: 0;
+}
+.fav-dropdown-nologo {
+  width: 28px; height: 28px; border-radius: 5px;
+  background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; flex-shrink: 0;
+}
+.fav-dropdown-info { min-width: 0; flex: 1; }
+.fav-dropdown-name {
+  font-family: var(--font-head); font-size: 0.58rem; font-weight: 700;
+  color: var(--text); letter-spacing: 0.04em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.fav-dropdown-item.playing .fav-dropdown-name { color: var(--accent2); }
+.fav-dropdown-meta {
+  font-size: 0.5rem; color: var(--muted); margin-top: 1px;
+}
+.fav-dropdown-play {
+  font-size: 0.75rem; color: var(--muted); flex-shrink: 0;
+  transition: color 0.15s;
+}
+.fav-dropdown-item:hover .fav-dropdown-play { color: var(--accent2); }
+.fav-dropdown-item.playing .fav-dropdown-play { color: var(--accent2); }
+.fav-dropdown-empty {
+  padding: 16px 12px; text-align: center;
+  font-size: 0.6rem; color: var(--muted);
 }
 
 .bottom-pad { height: 10px; }
@@ -1413,6 +1574,18 @@ input[type=range]::-moz-range-thumb {
             <div class="skin-preview" style="background:linear-gradient(135deg,#000800 40%,#33ff3366)"></div>
             <span data-i18n="skin_retro">Ретро</span>
           </div>
+          <div class="skin-item" data-skin="sunset" onclick="setSkin('sunset')">
+            <div class="skin-preview" style="background:linear-gradient(135deg,#0f0810 40%,#ff6b3566)"></div>
+            <span data-i18n="skin_sunset">Закат</span>
+          </div>
+          <div class="skin-item" data-skin="deep" onclick="setSkin('deep')">
+            <div class="skin-preview" style="background:linear-gradient(135deg,#020c1b 40%,#38bdf866)"></div>
+            <span data-i18n="skin_deep">Глубина</span>
+          </div>
+          <div class="skin-item" data-skin="ash" onclick="setSkin('ash')">
+            <div class="skin-preview" style="background:linear-gradient(135deg,#111316 40%,#a8b2c066)"></div>
+            <span data-i18n="skin_ash">Пепел</span>
+          </div>
         </div>
       </div>
 
@@ -1425,6 +1598,7 @@ input[type=range]::-moz-range-thumb {
           <div class="lang-item" data-lang="de" onclick="setLang('de')">🇩🇪 Deutsch</div>
           <div class="lang-item" data-lang="fr" onclick="setLang('fr')">🇫🇷 Français</div>
           <div class="lang-item" data-lang="es" onclick="setLang('es')">🇪🇸 Español</div>
+          <div class="lang-item" data-lang="ja" onclick="setLang('ja')">🇯🇵 日本語</div>
         </div>
       </div>
 
@@ -1457,11 +1631,17 @@ input[type=range]::-moz-range-thumb {
   <button class="edit-tags-btn" onclick="openTagEditor()" title="Редактировать теги">⚙</button>
   <div class="select-wrap" id="range-wrap">
     <select id="range-select" onchange="loadStations()">
-      <option value="0">Band 1</option>
+      <option value="0" data-i18n-band="1">Band 1</option>
     </select>
   </div>
-  <button class="fav-btn" id="fav-btn" onclick="loadFavourites()">♥ <span id="fav-btn-label">Избранное</span> <span class="fav-count" id="fav-count">0</span></button>
-  <button class="np-fav" id="controls-fav" onclick="toggleFavourite()" title="В избранное">♡</button>
+  <div class="fav-dropdown-wrap" id="fav-dropdown-wrap">
+    <button class="fav-btn" id="fav-btn" onclick="toggleFavDropdown()"><svg class="fav-heart-icon" viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> <span id="fav-btn-label">Избранное</span> <span class="fav-count" id="fav-count">0</span></button>
+    <div class="fav-dropdown" id="fav-dropdown">
+      <div class="fav-dropdown-header">♥ Избранные станции</div>
+      <div class="fav-dropdown-list" id="fav-dropdown-list"></div>
+    </div>
+  </div>
+  <button class="np-fav" id="controls-fav" onclick="toggleFavourite()" title="В избранное"><svg class="fav-heart-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
   <div class="status-bar" id="status-bar">Загрузка…</div>
 </div>
 
@@ -1476,7 +1656,7 @@ input[type=range]::-moz-range-thumb {
       <div class="tag-editor-list" id="tag-editor-list"></div>
       <div class="add-tag-row">
         <input class="add-tag-input" id="add-tag-input" type="text"
-               placeholder="новый тег, например: lofi"
+               placeholder="новый тег, например: lofi" id="tag-new-input"
                onkeydown="if(event.key==='Enter')addTag()">
         <button class="add-tag-btn" onclick="addTag()">+ Добавить</button>
       </div>
@@ -1573,11 +1753,15 @@ input[type=range]::-moz-range-thumb {
     <div class="chat-header">
       <div class="chat-header-left">
         <div class="chat-status-dot" id="chat-dot"></div>
-        <span class="chat-title">⬤ Эфирный чат</span>
+        <span class="chat-title" data-i18n="chat_title">⬤ Эфирный чат</span>
       </div>
       <span class="chat-online" id="chat-online-label"></span>
     </div>
     <div class="chat-messages" id="chat-messages-desktop"></div>
+    <div class="chat-reply-preview" id="chat-reply-preview-desktop">
+      <div class="chat-reply-preview-text" id="chat-reply-text-desktop"></div>
+      <button class="chat-reply-cancel" onclick="cancelReply('desktop')">✕</button>
+    </div>
     <div class="chat-input-row">
       <input class="chat-nick-input" id="chat-nick-desktop" maxlength="16" placeholder="Ник" />
       <input class="chat-text-input" id="chat-input-desktop" maxlength="280" placeholder="Сообщение..." onkeydown="if(event.key==='Enter')chatSend('desktop')" />
@@ -1590,17 +1774,21 @@ input[type=range]::-moz-range-thumb {
 <!-- ── Mobile chat drawer ────────────────────── -->
 <div class="chat-drawer-bar" onclick="toggleChatDrawer()">
   <span class="chat-drawer-icon">💬</span>
-  <span class="chat-drawer-label">Эфирный чат</span>
+  <span class="chat-drawer-label" data-i18n="chat_title">Эфирный чат</span>
   <span class="chat-drawer-unread" id="chat-unread">0</span>
   <span class="chat-drawer-chevron" id="chat-chevron">▲</span>
 </div>
 
 <div class="chat-drawer-panel" id="chat-drawer-panel">
   <div class="chat-drawer-handle" onclick="toggleChatDrawer()">
-    <span class="chat-drawer-handle-title">⬤ Эфирный чат</span>
-    <span style="color:var(--muted);font-size:0.7rem">▼ Закрыть</span>
+    <span class="chat-drawer-handle-title" data-i18n="chat_title">⬤ Эфирный чат</span>
+    <span data-i18n="chat_close" style="color:var(--muted);font-size:0.7rem">▼ Закрыть</span>
   </div>
   <div class="chat-messages" id="chat-messages-mobile" style="flex:1;height:auto;min-height:0"></div>
+  <div class="chat-reply-preview" id="chat-reply-preview-mobile">
+    <div class="chat-reply-preview-text" id="chat-reply-text-mobile"></div>
+    <button class="chat-reply-cancel" onclick="cancelReply('mobile')">✕</button>
+  </div>
   <div class="chat-input-row">
     <input class="chat-nick-input" id="chat-nick-mobile" maxlength="16" placeholder="Ник" />
     <input class="chat-text-input" id="chat-input-mobile" maxlength="280" placeholder="Сообщение..." onkeydown="if(event.key==='Enter')chatSend('mobile')" />
@@ -1626,7 +1814,7 @@ input[type=range]::-moz-range-thumb {
     <a class="svc-btn apple"   id="svc-apple"   href="#" target="_blank" rel="noopener"><span class="svc-icon">🎶</span>Apple</a>
     <a class="svc-btn yandex"  id="svc-yandex"  href="#" target="_blank" rel="noopener"><span class="svc-icon">🎧</span>Яндекс</a>
   </div>
-  <button class="np-fav" id="np-fav" onclick="toggleFavourite()" title="В избранное">♡</button>
+  <button class="np-fav" id="np-fav" onclick="toggleFavourite()" title="В избранное"><svg class="fav-heart-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
   <button class="np-stop" id="np-playstop" onclick="togglePlayStop()">▶ Play</button>
 </div>
 
@@ -1694,10 +1882,13 @@ function openTagEditor() {
   renderEditorChips();
   document.getElementById('add-tag-input').value = '';
   document.getElementById('tag-modal').classList.add('open');
+  document.getElementById('chat-drawer-panel')?.classList.remove('open');
+  document.querySelectorAll('.chat-input-row').forEach(el => el.classList.add('blurred'));
 }
 
 function closeTagEditor() {
   document.getElementById('tag-modal').classList.remove('open');
+  document.querySelectorAll('.chat-input-row').forEach(el => el.classList.remove('blurred'));
 }
 
 function onModalOverlayClick(e) {
@@ -1708,7 +1899,8 @@ let dragSrcIdx = null;
 
 function renderEditorChips() {
   const list = document.getElementById('tag-editor-list');
-  list.innerHTML = editorTags.map((t, i) => `
+  const last = editorTags.length - 1;
+  list.innerHTML = editorTags.map((tag, i) => `
     <div class="tag-chip-edit"
          draggable="true"
          data-idx="${i}"
@@ -1717,11 +1909,24 @@ function renderEditorChips() {
          ondragleave="onChipDragLeave(event)"
          ondrop="onChipDrop(event,${i})"
          ondragend="onChipDragEnd(event)">
-      <span class="drag-handle">⠿</span>
-      ${tagLabel(t)}
-      <button class="remove-tag" onclick="removeEditorTag(${i})" title="Удалить">✕</button>
+      <div class="tag-chip-edit-top">
+        <span class="drag-handle">⠿</span>
+        ${tagLabel(tag)}
+        <button class="remove-tag" onclick="removeEditorTag(${i})" title="Удалить">✕</button>
+      </div>
+      <div class="tag-chip-reorder">
+        <button onclick="moveEditorTag(${i},-1)" ${i === 0 ? 'disabled' : ''}>◀</button>
+        <button onclick="moveEditorTag(${i}, 1)" ${i === last ? 'disabled' : ''}>▶</button>
+      </div>
     </div>
   `).join('');
+}
+
+function moveEditorTag(i, dir) {
+  const j = i + dir;
+  if (j < 0 || j >= editorTags.length) return;
+  [editorTags[i], editorTags[j]] = [editorTags[j], editorTags[i]];
+  renderEditorChips();
 }
 
 function onChipDragStart(e, idx) {
@@ -1843,7 +2048,7 @@ async function fetchStations(tag, offset) {
       return await res.json();
     } catch(e) { continue; }
   }
-  throw new Error('Не удалось подключиться к radio-browser.info');
+  throw new Error(t('err_api'));
 }
 
 // Called when user changes tag — fetch count and build range list
@@ -1855,8 +2060,8 @@ async function onTagChange() {
   const status = document.getElementById('status-bar');
 
   // Reset to Band 1 while loading
-  rangeSelect.innerHTML = '<option value="0">Band 1</option>';
-  status.innerHTML = '<span class="hl">Подсчёт станций…</span>';
+  rangeSelect.innerHTML = `<option value="0">Band 1</option>`;
+  status.innerHTML = `<span class="hl">${t('status_counting')}</span>`;
 
   let total = tagCountCache[tag];
   if (!total) {
@@ -1892,19 +2097,19 @@ async function loadStations() {
   stopStation(true);
   isFavMode = false;
   document.getElementById('fav-btn').classList.remove('active');
-  status.innerHTML = '<span class="hl">Запрос к radio-browser.info…</span>';
+  status.innerHTML = `<span class="hl">${t('status_requesting')}</span>`;
 
   try {
     const data = await fetchStations(tag, offset);
     stations = data.filter(s => s.url_resolved || s.url);
 
     if (!stations.length) {
-      status.innerHTML = `<span class="err">Ничего не найдено для «${tag}»</span>`;
+      status.innerHTML = `<span class="err">${t('not_found')} «${tag}»</span>`;
     } else {
       renderTunerScale();
       const rangeLabel = document.getElementById('range-select').selectedOptions[0]?.textContent || '';
-      status.innerHTML = `Загружено: <span class="hl">${stations.length}</span> станций${rangeLabel ? ' · ' + rangeLabel : ''}`;
-      document.getElementById('station-count').innerHTML = `STATIONS: <span>${stations.length}</span>`;
+      status.innerHTML = `${t('status_loaded')}: <span class="hl">${stations.length}</span> ${t('status_stations')}${rangeLabel ? ' · ' + rangeLabel : ''}`;
+      document.getElementById('station-count').innerHTML = `${t('status_stations').toUpperCase()}: <span>${stations.length}</span>`;
 
       document.getElementById('scroll-slider').value = 0;
       currentIdx = 0;
@@ -1949,7 +2154,7 @@ function setNeedle(pct) {
 // ─── Tuner info display ───────────────────────────────────
 function updateTunerInfo(idx) {
   const rangeOpt = document.getElementById('range-select').selectedOptions[0];
-  const bandNum  = rangeOpt ? rangeOpt.textContent.replace('Band ', '') : '1';
+  const bandNum  = rangeOpt ? (parseInt(rangeOpt.value) + 1) : '1';
   const stationNum = idx + 1;
   document.getElementById('tuner-station-info').textContent =
     `ST ${stationNum}  ·  BAND ${bandNum}`;
@@ -2123,6 +2328,12 @@ window.addEventListener('DOMContentLoaded', () => {
   initNickInputs();
   initChatDelegation();
   chatConnect();
+  const audio = document.getElementById('audio-player');
+  if (audio) {
+    audio.addEventListener('play',  () => setPlayStopBtn(true));
+    audio.addEventListener('pause', () => setPlayStopBtn(false));
+    audio.addEventListener('ended', () => setPlayStopBtn(false));
+  }
 });
 
 // ─── CRT click → station website ──────────────────────────
@@ -2201,10 +2412,9 @@ function tuneToIndex(idx) {
 }
 
 function updateNowPlaying(s) {
-  document.getElementById('np-name').textContent = s.name || 'Без названия';
+  document.getElementById('np-name').textContent = s.name || t('np_no_name');
   document.getElementById('np-sub').textContent  =
     [s.countrycode, s.language, s.bitrate ? s.bitrate + ' kbps' : ''].filter(Boolean).join(' · ');
-  setPlayStopBtn(true);
   updateChatShareBtn();
 }
 
@@ -2234,10 +2444,10 @@ function setPlayStopBtn(playing) {
   const btn = document.getElementById('np-playstop');
   if (!btn) return;
   if (playing) {
-    btn.textContent = '■ Стоп';
+    btn.textContent = t('btn_stop');
     btn.classList.add('is-playing');
   } else {
-    btn.textContent = '▶ Play';
+    btn.textContent = t('btn_play');
     btn.classList.remove('is-playing');
   }
 }
@@ -2294,23 +2504,38 @@ function toggleFavourite() {
   const idx = favs.findIndex(f => f.stationuuid === currentStation.stationuuid);
   if (idx === -1) {
     favs.push(currentStation);
-    showFavToast(`♥ ${currentStation.name} добавлена`);
+    showFavToast(`♥ ${currentStation.name} ${t('fav_added')}`);
   } else {
     favs.splice(idx, 1);
-    showFavToast(`♡ ${currentStation.name} удалена`);
+    showFavToast(`♡ ${currentStation.name} ${t('fav_removed')}`);
   }
   saveFavs(favs);
   updateFavBtn();
   updateFavCount();
+  // Sync chat card fav buttons for currentStation
+  const fav = isFav(currentStation);
+  const svgF = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+  const svgO = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+  chatStationRegistry.forEach((stObj, cardId) => {
+    if (stObj.stationuuid === currentStation.stationuuid) {
+      document.querySelectorAll(`[data-fav-card="${cardId}"]`).forEach(b => {
+        b.innerHTML = fav ? svgF : svgO;
+        b.classList.toggle('active', fav);
+        b.title = fav ? 'Убрать из избранного' : 'В избранное';
+      });
+    }
+  });
 }
 
 function updateFavBtn() {
   const fav = isFav(currentStation);
   const label = fav ? 'Убрать из избранного' : 'В избранное';
+  const svgFilled  = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+  const svgOutline = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
   ['np-fav', 'controls-fav'].forEach(id => {
     const btn = document.getElementById(id);
     if (!btn) return;
-    btn.textContent = fav ? '♥' : '♡';
+    btn.innerHTML = fav ? svgFilled : svgOutline;
     btn.classList.toggle('active', fav);
     btn.title = label;
   });
@@ -2348,13 +2573,100 @@ function showFavToast(msg) {
 // ─── Load Favourites mode ─────────────────────────────────
 let isFavMode = false;
 
+// ── Fav dropdown ──────────────────────────────────────────
+function toggleFavDropdown() {
+  const dd = document.getElementById('fav-dropdown');
+  const isOpen = dd.classList.contains('open');
+  if (isOpen) { dd.classList.remove('open'); return; }
+  renderFavDropdown();
+  dd.classList.add('open');
+}
+
+function closeFavDropdown() {
+  document.getElementById('fav-dropdown')?.classList.remove('open');
+}
+
+function renderFavDropdown() {
+  const list = document.getElementById('fav-dropdown-list');
+  const favs = loadFavs();
+  list.innerHTML = '';
+  if (!favs.length) {
+    list.innerHTML = `<div class="fav-dropdown-empty">♡ ${t('fav_empty')}</div>`;
+    return;
+  }
+  favs.forEach(st => {
+    const item = document.createElement('div');
+    const isPlaying = currentStation && currentStation.stationuuid === st.stationuuid;
+    item.className = 'fav-dropdown-item' + (isPlaying ? ' playing' : '');
+
+    // Logo
+    const logo = document.createElement('div');
+    if (st.favicon) {
+      const img = document.createElement('img');
+      img.className = 'fav-dropdown-logo';
+      img.src = st.favicon;
+      img.onerror = () => img.replaceWith(buildFavNoLogo());
+      logo.appendChild(img);
+    } else {
+      logo.appendChild(buildFavNoLogo());
+    }
+
+    const info = document.createElement('div');
+    info.className = 'fav-dropdown-info';
+    const name = document.createElement('div');
+    name.className = 'fav-dropdown-name';
+    name.textContent = st.name || '—';
+    const meta = document.createElement('div');
+    meta.className = 'fav-dropdown-meta';
+    meta.textContent = [st.countrycode, st.bitrate ? st.bitrate + ' kbps' : ''].filter(Boolean).join(' · ');
+    info.appendChild(name);
+    info.appendChild(meta);
+
+    const playIcon = document.createElement('div');
+    playIcon.className = 'fav-dropdown-play';
+    playIcon.textContent = isPlaying ? '▶' : '▷';
+
+    item.appendChild(logo);
+    item.appendChild(info);
+    item.appendChild(playIcon);
+
+    item.onclick = () => {
+      closeFavDropdown();
+      const audio = document.getElementById('audio-player');
+      audio.src = st.url_resolved || st.url;
+      audio.play().catch(() => {});
+      updateNowPlaying(st);
+      updateCRT(st, false);
+      setTicker(st.name, false);
+      updateFavBtn();
+      clearTrackMeta();
+    };
+
+    list.appendChild(item);
+  });
+}
+
+function buildFavNoLogo() {
+  const d = document.createElement('div');
+  d.className = 'fav-dropdown-nologo';
+  d.textContent = '📻';
+  return d;
+}
+
+// Close dropdown on outside click
+document.addEventListener('click', e => {
+  if (!document.getElementById('fav-dropdown-wrap')?.contains(e.target)) {
+    closeFavDropdown();
+  }
+});
+
 function loadFavourites() {
   const favs = loadFavs();
   const sliderSec = document.getElementById('slider-section');
   const status    = document.getElementById('status-bar');
 
   if (!favs.length) {
-    showFavToast('Список избранного пуст');
+    showFavToast(t('fav_empty'));
     return;
   }
 
@@ -2365,8 +2677,8 @@ function loadFavourites() {
   stations = favs.filter(s => s.url_resolved || s.url);
 
   renderTunerScale();
-  status.innerHTML = `Избранное: <span class="hl">${stations.length}</span> станций`;
-  document.getElementById('station-count').innerHTML = `STATIONS: <span>${stations.length}</span>`;
+  status.innerHTML = `${t('status_fav')}: <span class="hl">${stations.length}</span> ${t('status_stations')}`;
+  document.getElementById('station-count').innerHTML = `${t('status_stations').toUpperCase()}: <span>${stations.length}</span>`;
   sliderSec.style.display = 'block';
 
   document.getElementById('scroll-slider').value = 0;
@@ -2425,13 +2737,13 @@ function chatConnect() {
   try {
     mqttClient = new Paho.MQTT.Client(MQTT_HOST, MQTT_PORT, '/mqtt', mqttClientId);
   } catch(e) {
-    chatSysMsg('Ошибка: MQTT недоступен'); return;
+    chatSysMsg('chat_no_mqtt'); return;
   }
 
   mqttClient.onConnectionLost = (resp) => {
     chatConnected = false;
     setChatDot(false);
-    chatSysMsg('Соединение потеряно, переподключение…');
+    chatSysMsg('chat_lost');
     setTimeout(chatConnect, 4000);
   };
 
@@ -2450,13 +2762,13 @@ function chatConnect() {
     onSuccess: () => {
       chatConnected = true;
       setChatDot(true);
-      chatSysMsg('Подключено к эфиру');
+      chatSysMsg('chat_connected');
       mqttClient.subscribe(MQTT_TOPIC);
     },
     onFailure: (e) => {
       chatConnected = false;
       setChatDot(false);
-      chatSysMsg('Не удалось подключиться, повтор через 6с…');
+      chatSysMsg('chat_failed');
       setTimeout(chatConnect, 6000);
     }
   });
@@ -2466,14 +2778,15 @@ function setChatDot(on) {
   document.getElementById('chat-dot')?.classList.toggle('connected', on);
 }
 
-function chatSysMsg(text) {
-  appendChatEl(createSysEl(text));
+function chatSysMsg(key) {
+  appendChatEl(createSysEl(key));
 }
 
-function createSysEl(text) {
+function createSysEl(key) {
   const d = document.createElement('div');
   d.className = 'chat-sys';
-  d.textContent = text;
+  d.dataset.i18nSys = key;
+  d.textContent = t(key);
   return d;
 }
 
@@ -2514,33 +2827,46 @@ function renderChatMessage(data, isMine) {
 function buildTextMsg(data, isMine) {
   const wrap = document.createElement('div');
   wrap.className = 'chat-msg ' + (isMine ? 'mine' : 'theirs');
+  // Store nick+text for reply delegation (works on clones too)
+  wrap.dataset.replyNick = data.nick || 'anon';
+  wrap.dataset.replyText = data.text || '';
 
   const nick = document.createElement('div');
   nick.className = 'chat-msg-nick';
   nick.textContent = data.nick || 'anon';
 
-  const bubble = document.createElement('div');
-  bubble.className = 'chat-msg-bubble';
-  bubble.textContent = data.text || '';
+  const replyBtn = document.createElement('button');
+  replyBtn.className = 'chat-reply-btn';
+  replyBtn.textContent = '↩';
+  replyBtn.title = 'Ответить';
+  // onclick set via delegation on pane — works on clones
+
+  const timeStr = new Date().toLocaleTimeString('ru', {hour:'2-digit', minute:'2-digit'});
 
   const time = document.createElement('div');
   time.className = 'chat-msg-time';
-  time.textContent = new Date().toLocaleTimeString('ru', {hour:'2-digit', minute:'2-digit'});
+  time.textContent = timeStr;
 
-  // Meta row: nick (left) + time (right) — visible on desktop
   const metaRow = document.createElement('div');
   metaRow.className = 'chat-msg-meta';
   metaRow.appendChild(nick);
   metaRow.appendChild(time);
+  metaRow.appendChild(replyBtn);
 
-  // Mobile: nick above, no time in meta
-  const nickMobile = document.createElement('div');
-  nickMobile.className = 'chat-msg-nick chat-msg-nick-mobile';
-  nickMobile.textContent = data.nick || 'anon';
+  const bubble = document.createElement('div');
+  bubble.className = 'chat-msg-bubble';
 
-  const timeMobile = document.createElement('div');
-  timeMobile.className = 'chat-msg-time chat-msg-time-mobile';
-  timeMobile.textContent = time.textContent;
+  // Quote block if this is a reply
+  if (data.replyTo) {
+    const quote = document.createElement('div');
+    quote.className = 'chat-reply-quote';
+    quote.innerHTML = `<strong>${data.replyTo.nick}</strong>${(data.replyTo.text || '').slice(0, 10)}…`;
+    bubble.appendChild(quote);
+  }
+
+  const text = document.createElement('span');
+  text.textContent = data.text || '';
+  bubble.appendChild(text);
 
   wrap.appendChild(metaRow);
   wrap.appendChild(bubble);
@@ -2553,7 +2879,7 @@ function buildStationCard(data, isMine) {
 
   const nick = document.createElement('div');
   nick.className = 'chat-msg-nick';
-  nick.textContent = (data.nick || 'anon') + ' · поделился станцией';
+  nick.textContent = (data.nick || 'anon') + ' · ' + t('chat_shared');
 
   const stObj = {
     name: data.name, favicon: data.favicon, homepage: data.homepage,
@@ -2587,17 +2913,19 @@ function buildStationCard(data, isMine) {
   info.className = 'chat-card-info';
   const name = document.createElement('div');
   name.className = 'chat-card-name';
-  name.textContent = (data.name || 'Станция').slice(0, 30);
+  name.textContent = (data.name || t('chat_station')).slice(0, 30);
   const play = document.createElement('div');
   play.className = 'chat-card-play';
-  play.textContent = '▶ Нажми, чтобы слушать';
+  play.textContent = t('chat_listen');
   info.appendChild(name);
   info.appendChild(play);
   card.appendChild(info);
 
   const favBtn = document.createElement('button');
   favBtn.className = 'chat-card-fav' + (isFav(stObj) ? ' active' : '');
-  favBtn.textContent = isFav(stObj) ? '♥' : '♡';
+  favBtn.innerHTML = isFav(stObj)
+    ? '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'
+    : '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
   favBtn.title = isFav(stObj) ? 'Убрать из избранного' : 'В избранное';
   favBtn.dataset.favCard = cardId;
   card.appendChild(favBtn);
@@ -2662,23 +2990,48 @@ function playCardStation(stObj) {
   }
 }
 
+// ── Reply state ───────────────────────────────────────────
+let replyTarget = null; // { nick, text }
+
+function startReply(nick, text) {
+  replyTarget = { nick, text };
+  ['desktop', 'mobile'].forEach(side => {
+    const preview = document.getElementById('chat-reply-preview-' + side);
+    const previewText = document.getElementById('chat-reply-text-' + side);
+    if (preview && previewText) {
+      previewText.innerHTML = `<strong>${nick}</strong>${text.slice(0, 10)}…`;
+      preview.classList.add('show');
+    }
+    document.getElementById('chat-input-' + side)?.focus();
+  });
+}
+
+function cancelReply(side) {
+  replyTarget = null;
+  ['desktop', 'mobile'].forEach(s => {
+    document.getElementById('chat-reply-preview-' + s)?.classList.remove('show');
+  });
+}
+
 // ── Send message ──────────────────────────────────────────
 function chatSend(side) {
-  if (!chatConnected) { chatSysMsg('Нет соединения…'); return; }
+  if (!chatConnected) { chatSysMsg('chat_no_conn'); return; }
   const input = document.getElementById('chat-input-' + side);
   const text  = (input?.value || '').trim();
   if (!text) return;
 
   const nick = getChatNick();
   const data = { type: 'text', nick, text };
+  if (replyTarget) data.replyTo = replyTarget;
   publishChat(data);
   renderChatMessage(data, true);
   input.value = '';
+  cancelReply(side);
 }
 
 function chatShareStation(side) {
   if (!currentStation) return;
-  if (!chatConnected) { chatSysMsg('Нет соединения…'); return; }
+  if (!chatConnected) { chatSysMsg('chat_no_conn'); return; }
   const nick = getChatNick();
   const data = {
     type: 'station',
@@ -2711,6 +3064,15 @@ function initChatDelegation() {
     if (!pane) return;
 
     pane.addEventListener('click', e => {
+      // Reply button click
+      const replyBtn = e.target.closest('.chat-reply-btn');
+      if (replyBtn) {
+        e.stopPropagation();
+        const msg = replyBtn.closest('.chat-msg');
+        if (msg) startReply(msg.dataset.replyNick || 'anon', msg.dataset.replyText || '');
+        return;
+      }
+
       // Fav button click
       const favBtn = e.target.closest('[data-fav-card]');
       if (favBtn) {
@@ -2720,14 +3082,17 @@ function initChatDelegation() {
         if (!stObj) return;
         let favs = loadFavs();
         const idx = favs.findIndex(f => f.stationuuid === stObj.stationuuid);
-        if (idx === -1) { favs.push(stObj); showFavToast(`♥ ${stObj.name} добавлена`); }
-        else            { favs.splice(idx, 1); showFavToast(`♡ ${stObj.name} удалена`); }
+        if (idx === -1) { favs.push(stObj); showFavToast(`♥ ${stObj.name} ${t('fav_added')}`); }
+        else            { favs.splice(idx, 1); showFavToast(`♡ ${stObj.name} ${t('fav_removed')}`); }
         saveFavs(favs);
         updateFavCount();
+        updateFavBtn();
         // Refresh all fav buttons for this station in both panes
         const fav = isFav(stObj);
+        const svgF = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+        const svgO = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
         document.querySelectorAll(`[data-fav-card="${cardId}"]`).forEach(b => {
-          b.textContent = fav ? '♥' : '♡';
+          b.innerHTML = fav ? svgF : svgO;
           b.classList.toggle('active', fav);
           b.title = fav ? 'Убрать из избранного' : 'В избранное';
         });
@@ -2834,6 +3199,15 @@ const SKINS = {
   retro: { '--accent':'#33ff33','--accent2':'#ffaa00','--accent3':'#ffdd00',
            '--bg':'#000800','--bg2':'#001200','--surface':'#001800','--border':'#003300',
            '--text':'#88ff88','--muted':'#2a5a2a' },
+  sunset:{ '--accent':'#ff6b35','--accent2':'#ff2d7a','--accent3':'#ffd166',
+           '--bg':'#0f0810','--bg2':'#1a0d18','--surface':'#241020','--border':'#3d1a30',
+           '--text':'#f5d0e0','--muted':'#7a4060' },
+  deep:  { '--accent':'#38bdf8','--accent2':'#818cf8','--accent3':'#34d399',
+           '--bg':'#020c1b','--bg2':'#071428','--surface':'#0d1f3c','--border':'#162d52',
+           '--text':'#cae6ff','--muted':'#3a5a7a' },
+  ash:   { '--accent':'#a8b2c0','--accent2':'#7c8fa0','--accent3':'#d0d8e0',
+           '--bg':'#111316','--bg2':'#181b1f','--surface':'#1f2328','--border':'#2c3038',
+           '--text':'#c8d0da','--muted':'#4a5260' },
 };
 function setSkin(name) {
   const skin = SKINS[name]; if (!skin) return;
@@ -2851,6 +3225,7 @@ const LANG_KEY = 'radiowaveLang';
 const I18N = {
   ru: {
     skins:'СКИНЫ', skin_dark:'Тёмный', skin_light:'Светлый', skin_neon:'Неон', skin_retro:'Ретро',
+    skin_sunset:'Закат', skin_deep:'Глубина', skin_ash:'Пепел',
     menu:'МЕНЮ', menu_settings:'Настройки', menu_hotkeys:'Горячие клавиши', menu_about:'О проекте',
     modal_settings:'Настройки', modal_hotkeys:'Горячие клавиши', modal_about:'О проекте',
     fav_label:'Избранное', tag_edit_title:'Редактор тегов',
@@ -2859,9 +3234,26 @@ const I18N = {
     hk_prev:'Предыдущая станция', hk_next:'Следующая станция', hk_play:'Play / Стоп',
     about_desc:'Онлайн-радио плеер на основе открытой базы данных radio-browser.info. Более 30 000 станций по всему миру.',
     btn_clear:'Очистить',
+    btn_stop:'■ Стоп', btn_play:'▶ Играть',
+    chat_station:'Станция', chat_listen:'▶ Нажми, чтобы слушать',
+    chat_title:'⬤ Эфирный чат', chat_close:'▼ Закрыть',
+    lang_code:'RU',
+    status_loaded:'Загружено', status_stations:'станций', status_fav:'Избранное',
+    status_counting:'Подсчёт станций…', status_requesting:'Запрос к radio-browser.info…',
+    status_band:'Диапазон',
+    fav_added:'добавлена', fav_removed:'удалена', fav_empty:'Список избранного пуст',
+    np_no_name:'Без названия',
+    chat_shared:'поделился станцией',
+    chat_connected:'Подключено к эфиру', chat_lost:'Соединение потеряно, переподключение…',
+    chat_failed:'Не удалось подключиться, повтор через 6с…', chat_no_conn:'Нет соединения…',
+    chat_no_mqtt:'Ошибка: MQTT недоступен',
+    err_api:'Не удалось подключиться к radio-browser.info',
+    tag_placeholder:'новый тег, например: lofi',
+    not_found:'Ничего не найдено для',
   },
   en: {
     skins:'SKINS', skin_dark:'Dark', skin_light:'Light', skin_neon:'Neon', skin_retro:'Retro',
+    skin_sunset:'Sunset', skin_deep:'Deep', skin_ash:'Ash',
     menu:'MENU', menu_settings:'Settings', menu_hotkeys:'Hotkeys', menu_about:'About',
     modal_settings:'Settings', modal_hotkeys:'Keyboard Shortcuts', modal_about:'About',
     fav_label:'Favourites', tag_edit_title:'Tag Editor',
@@ -2870,9 +3262,26 @@ const I18N = {
     hk_prev:'Previous station', hk_next:'Next station', hk_play:'Play / Stop',
     about_desc:'Online radio player powered by the open radio-browser.info database. Over 30,000 stations worldwide.',
     btn_clear:'Clear',
+    btn_stop:'■ Stop', btn_play:'▶ Play',
+    chat_station:'Station', chat_listen:'▶ Click to listen',
+    chat_title:'⬤ Live Chat', chat_close:'▼ Close',
+    lang_code:'EN',
+    status_loaded:'Loaded', status_stations:'stations', status_fav:'Favourites',
+    status_counting:'Counting stations…', status_requesting:'Requesting radio-browser.info…',
+    status_band:'Band',
+    fav_added:'added', fav_removed:'removed', fav_empty:'Favourites list is empty',
+    np_no_name:'No name',
+    chat_shared:'shared a station',
+    chat_connected:'Connected to broadcast', chat_lost:'Connection lost, reconnecting…',
+    chat_failed:'Failed to connect, retrying in 6s…', chat_no_conn:'No connection…',
+    chat_no_mqtt:'Error: MQTT unavailable',
+    err_api:'Failed to connect to radio-browser.info',
+    tag_placeholder:'new tag, e.g.: lofi',
+    not_found:'Nothing found for',
   },
   de: {
     skins:'SKINS', skin_dark:'Dunkel', skin_light:'Hell', skin_neon:'Neon', skin_retro:'Retro',
+    skin_sunset:'Sonnenuntergang', skin_deep:'Tief', skin_ash:'Asche',
     menu:'MENÜ', menu_settings:'Einstellungen', menu_hotkeys:'Tastenkürzel', menu_about:'Über das Projekt',
     modal_settings:'Einstellungen', modal_hotkeys:'Tastenkürzel', modal_about:'Über das Projekt',
     fav_label:'Favoriten', tag_edit_title:'Tag-Editor',
@@ -2881,9 +3290,26 @@ const I18N = {
     hk_prev:'Vorherige Station', hk_next:'Nächste Station', hk_play:'Play / Stopp',
     about_desc:'Online-Radioplayer auf Basis der offenen Datenbank radio-browser.info. Über 30.000 Sender weltweit.',
     btn_clear:'Löschen',
+    btn_stop:'■ Stopp', btn_play:'▶ Abspielen',
+    chat_station:'Station', chat_listen:'▶ Zum Hören klicken',
+    chat_title:'⬤ Live-Chat', chat_close:'▼ Schließen',
+    lang_code:'DE',
+    status_loaded:'Geladen', status_stations:'Sender', status_fav:'Favoriten',
+    status_counting:'Sender werden gezählt…', status_requesting:'Anfrage an radio-browser.info…',
+    status_band:'Band',
+    fav_added:'hinzugefügt', fav_removed:'entfernt', fav_empty:'Favoritenliste ist leer',
+    np_no_name:'Kein Name',
+    chat_shared:'hat eine Station geteilt',
+    chat_connected:'Mit dem Äther verbunden', chat_lost:'Verbindung verloren, erneut verbinden…',
+    chat_failed:'Verbindung fehlgeschlagen, neuer Versuch in 6s…', chat_no_conn:'Keine Verbindung…',
+    chat_no_mqtt:'Fehler: MQTT nicht verfügbar',
+    err_api:'Verbindung zu radio-browser.info fehlgeschlagen',
+    tag_placeholder:'neuer Tag, z.B.: lofi',
+    not_found:'Nichts gefunden für',
   },
   fr: {
     skins:'THÈMES', skin_dark:'Sombre', skin_light:'Clair', skin_neon:'Néon', skin_retro:'Rétro',
+    skin_sunset:'Coucher', skin_deep:'Abyssal', skin_ash:'Cendre',
     menu:'MENU', menu_settings:'Paramètres', menu_hotkeys:'Raccourcis', menu_about:'À propos',
     modal_settings:'Paramètres', modal_hotkeys:'Raccourcis clavier', modal_about:'À propos',
     fav_label:'Favoris', tag_edit_title:'Éditeur de tags',
@@ -2892,9 +3318,26 @@ const I18N = {
     hk_prev:'Station précédente', hk_next:'Station suivante', hk_play:'Play / Stop',
     about_desc:'Lecteur radio en ligne basé sur radio-browser.info. Plus de 30 000 stations dans le monde.',
     btn_clear:'Effacer',
+    btn_stop:'■ Stop', btn_play:'▶ Lancer',
+    chat_station:'Station', chat_listen:'▶ Cliquez pour écouter',
+    chat_title:'⬤ Chat en direct', chat_close:'▼ Fermer',
+    lang_code:'FR',
+    status_loaded:'Chargé', status_stations:'stations', status_fav:'Favoris',
+    status_counting:'Comptage des stations…', status_requesting:'Requête vers radio-browser.info…',
+    status_band:'Bande',
+    fav_added:'ajoutée', fav_removed:'supprimée', fav_empty:'Liste de favoris vide',
+    np_no_name:'Sans nom',
+    chat_shared:'a partagé une station',
+    chat_connected:'Connecté à l\'éther', chat_lost:'Connexion perdue, reconnexion…',
+    chat_failed:'Échec de connexion, nouvelle tentative dans 6s…', chat_no_conn:'Pas de connexion…',
+    chat_no_mqtt:'Erreur : MQTT indisponible',
+    err_api:'Impossible de se connecter à radio-browser.info',
+    tag_placeholder:'nouveau tag, ex : lofi',
+    not_found:'Rien trouvé pour',
   },
   es: {
     skins:'TEMAS', skin_dark:'Oscuro', skin_light:'Claro', skin_neon:'Neón', skin_retro:'Retro',
+    skin_sunset:'Atardecer', skin_deep:'Profundo', skin_ash:'Ceniza',
     menu:'MENÚ', menu_settings:'Configuración', menu_hotkeys:'Atajos', menu_about:'Acerca de',
     modal_settings:'Configuración', modal_hotkeys:'Atajos de teclado', modal_about:'Acerca de',
     fav_label:'Favoritos', tag_edit_title:'Editor de etiquetas',
@@ -2903,6 +3346,50 @@ const I18N = {
     hk_prev:'Estación anterior', hk_next:'Estación siguiente', hk_play:'Play / Parar',
     about_desc:'Reproductor de radio en línea basado en radio-browser.info. Más de 30.000 estaciones.',
     btn_clear:'Borrar',
+    btn_stop:'■ Parar', btn_play:'▶ Reproducir',
+    chat_station:'Estación', chat_listen:'▶ Haz clic para escuchar',
+    chat_title:'⬤ Chat en vivo', chat_close:'▼ Cerrar',
+    lang_code:'ES',
+    status_loaded:'Cargado', status_stations:'estaciones', status_fav:'Favoritos',
+    status_counting:'Contando estaciones…', status_requesting:'Consultando radio-browser.info…',
+    status_band:'Banda',
+    fav_added:'añadida', fav_removed:'eliminada', fav_empty:'Lista de favoritos vacía',
+    np_no_name:'Sin nombre',
+    chat_shared:'compartió una estación',
+    chat_connected:'Conectado al éter', chat_lost:'Conexión perdida, reconectando…',
+    chat_failed:'Fallo al conectar, reintentando en 6s…', chat_no_conn:'Sin conexión…',
+    chat_no_mqtt:'Error: MQTT no disponible',
+    err_api:'No se pudo conectar a radio-browser.info',
+    tag_placeholder:'nueva etiqueta, p.ej.: lofi',
+    not_found:'Nada encontrado para',
+  },
+  ja: {
+    skins:'スキン', skin_dark:'ダーク', skin_light:'ライト', skin_neon:'ネオン', skin_retro:'レトロ',
+    skin_sunset:'サンセット', skin_deep:'ディープ', skin_ash:'アッシュ',
+    menu:'メニュー', menu_settings:'設定', menu_hotkeys:'ショートカット', menu_about:'について',
+    modal_settings:'設定', modal_hotkeys:'キーボードショートカット', modal_about:'について',
+    fav_label:'お気に入り', tag_edit_title:'タグ編集',
+    open_site:'サイトを開く ↗', freq_label:'⬤ 周波数', menu_clear_confirm:'お気に入りを削除？',
+    chat_placeholder:'メッセージ…', nick_placeholder:'ニック',
+    hk_prev:'前のステーション', hk_next:'次のステーション', hk_play:'再生 / 停止',
+    about_desc:'radio-browser.info のオープンデータベースを使ったオンラインラジオプレーヤー。世界中の3万以上のステーション。',
+    btn_clear:'削除',
+    btn_stop:'■ 停止', btn_play:'▶ 再生',
+    chat_station:'ステーション', chat_listen:'▶ クリックして聴く',
+    chat_title:'⬤ ライブチャット', chat_close:'▼ 閉じる',
+    lang_code:'JP',
+    status_loaded:'読み込み済み', status_stations:'ステーション', status_fav:'お気に入り',
+    status_counting:'ステーションを集計中…', status_requesting:'radio-browser.info にリクエスト中…',
+    status_band:'バンド',
+    fav_added:'追加されました', fav_removed:'削除されました', fav_empty:'お気に入りリストは空です',
+    np_no_name:'名前なし',
+    chat_shared:'がステーションをシェアしました',
+    chat_connected:'放送に接続しました', chat_lost:'接続が切れました。再接続中…',
+    chat_failed:'接続失敗、6秒後に再試行…', chat_no_conn:'接続なし…',
+    chat_no_mqtt:'エラー：MQTT 利用不可',
+    err_api:'radio-browser.info に接続できませんでした',
+    tag_placeholder:'新しいタグ (例: lofi)',
+    not_found:'見つかりませんでした：',
   },
 };
 let currentLang = 'ru';
@@ -2918,9 +3405,41 @@ function applyLang() {
   if (crtHint) crtHint.textContent = t('open_site');
   const tunerLabel = document.querySelector('.tuner-label');
   if (tunerLabel) tunerLabel.textContent = t('freq_label');
+  // Tag editor placeholder
+  const tagInput = document.getElementById('tag-new-input');
+  if (tagInput) tagInput.placeholder = t('tag_placeholder');
+  // Band selector labels intentionally NOT translated — always "Band N"
+  // Status bar — rebuild from global state
+  const status = document.getElementById('status-bar');
+  if (status && stations.length) {
+    if (isFavMode) {
+      status.innerHTML = `${t('status_fav')}: <span class="hl">${stations.length}</span> ${t('status_stations')}`;
+    } else {
+      const rs = document.getElementById('range-select');
+      const bandLabel = rs?.options[rs.selectedIndex] ? ` · ${rs.options[rs.selectedIndex].textContent}` : '';
+      status.innerHTML = `${t('status_loaded')}: <span class="hl">${stations.length}</span> ${t('status_stations')}${bandLabel}`;
+    }
+  }
+  // STATIONS: counter in header
+  const stCount = document.getElementById('station-count');
+  if (stCount) {
+    const span = stCount.querySelector('span');
+    const n = span ? span.textContent : '—';
+    stCount.innerHTML = `${t('status_stations').toUpperCase()}: <span>${n}</span>`;
+  }
+  // Lang button label
   const langBtn = document.getElementById('lang-btn');
-  if (langBtn) langBtn.textContent = ({ru:'RU',en:'EN',de:'DE',fr:'FR',es:'ES'})[currentLang] || 'RU';
+  if (langBtn) langBtn.textContent = t('lang_code');
   document.querySelectorAll('.lang-item').forEach(el => el.classList.toggle('active', el.dataset.lang === currentLang));
+  // Play/Stop button — re-label without changing state
+  const psBtn = document.getElementById('np-playstop');
+  if (psBtn) {
+    psBtn.textContent = psBtn.classList.contains('is-playing') ? t('btn_stop') : t('btn_play');
+  }
+  // Re-translate all chat system messages already in DOM
+  document.querySelectorAll('.chat-sys[data-i18n-sys]').forEach(el => {
+    el.textContent = t(el.dataset.i18nSys);
+  });
 }
 function setLang(lang) { currentLang = lang; localStorage.setItem(LANG_KEY, lang); applyLang(); closeAllPanels(); }
 function loadLang() { currentLang = localStorage.getItem(LANG_KEY) || 'ru'; applyLang(); }
