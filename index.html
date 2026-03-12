@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>RADIO//WAVE</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
@@ -75,7 +75,7 @@ header {
 /* ── Controls ─────────────────────────────────── */
 .controls {
   padding: 20px 40px;
-  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
 }
 
 /* Desktop center wrapper — 60% width */
@@ -92,21 +92,89 @@ header {
   .controls { padding: 20px 0; }
   .tuner-section { padding-bottom: 20px; }
 }
+/* ── Custom dropdowns (tag + range) ──────────── */
 .select-wrap { position: relative; flex-shrink: 0; }
-.select-wrap::after {
-  content: '▾'; position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-  color: var(--accent); pointer-events: none; font-size: 11px;
+
+/* Скрываем нативный select — он остаётся в DOM для совместимости */
+.select-wrap select {
+  position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0;
 }
-select {
-  appearance: none; background: var(--surface); border: 1px solid var(--border);
-  border-radius: 6px; color: var(--text); font-family: var(--font-head);
-  font-size: 0.68rem; letter-spacing: 0.08em; padding: 9px 32px 9px 14px;
-  cursor: pointer; min-width: 190px; outline: none;
+
+/* Кастомная кнопка-триггер */
+.sel-trigger {
+  appearance: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--font-head);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  padding: 9px 32px 9px 14px;
+  cursor: pointer;
+  min-width: 190px;
+  outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px;
+  white-space: nowrap;
+  user-select: none;
+  position: relative;
 }
-select:focus, select:hover { border-color: var(--accent); box-shadow: 0 0 10px rgba(0,229,255,0.15); }
-select option { background: #111827; }
-#range-select { min-width: 110px; }
+.sel-trigger::after {
+  content: '▾';
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  color: var(--accent); font-size: 11px; pointer-events: none;
+  transition: transform 0.18s;
+}
+.sel-trigger.open::after { transform: translateY(-50%) rotate(180deg); }
+.sel-trigger:hover, .sel-trigger.open {
+  border-color: var(--accent);
+  box-shadow: 0 0 10px rgba(0,229,255,0.15);
+}
+
+/* Выпадающий список */
+.sel-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 20px rgba(0,229,255,0.06);
+  z-index: 200;
+  overflow: hidden;
+  display: none;
+  flex-direction: column;
+  animation: panelIn 0.15s ease;
+  max-height: 260px;
+}
+.sel-dropdown.open { display: flex; }
+.sel-dropdown-list {
+  overflow-y: auto;
+  max-height: 260px;
+}
+.sel-dropdown-list::-webkit-scrollbar { width: 3px; }
+.sel-dropdown-list::-webkit-scrollbar-track { background: transparent; }
+.sel-dropdown-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.sel-option {
+  padding: 8px 14px;
+  font-family: var(--font-head);
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: background 0.12s, color 0.12s;
+  white-space: nowrap;
+}
+.sel-option:last-child { border-bottom: none; }
+.sel-option:hover { background: rgba(0,229,255,0.08); color: var(--accent); }
+.sel-option.selected { color: var(--accent); background: rgba(0,229,255,0.06); }
+
+#range-trigger { min-width: 110px; }
+
 .status-bar { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.04em; flex: 1; text-align: right; }
 .status-bar .hl { color: var(--accent); }
 .status-bar .err { color: var(--accent2); }
@@ -308,8 +376,9 @@ select option { background: #111827; }
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 10px;
-  overflow: hidden;
+  overflow: visible;
   display: flex; flex-direction: column;
+  position: relative;
 }
 
 .chat-header {
@@ -517,6 +586,101 @@ select option { background: #111827; }
   transition: color 0.15s; flex-shrink: 0;
 }
 .chat-reply-cancel:hover { color: var(--accent2); }
+
+/* ── GIF picker ──────────────────────────────── */
+.gif-picker {
+  display: none;
+  position: fixed;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 -4px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,229,255,0.08);
+  z-index: 9999;
+  flex-direction: column;
+  width: 320px;
+  height: 300px;
+}
+@media (max-width: 679px) {
+  .gif-picker {
+    width: calc(100vw - 16px);
+    left: 8px !important;
+    border-radius: 10px;
+  }
+}
+.gif-picker.open { display: flex; }
+.gif-picker-search {
+  display: flex; gap: 6px; align-items: center;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.gif-search-input {
+  flex: 1;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+  color: var(--text); font-family: var(--font-body); font-size: 0.75rem;
+  padding: 5px 10px; outline: none;
+  transition: border-color 0.2s;
+}
+.gif-search-input:focus { border-color: var(--accent); }
+.gif-search-btn {
+  background: transparent; border: 1px solid var(--border);
+  color: var(--accent); font-size: 0.7rem; border-radius: 6px;
+  padding: 5px 10px; cursor: pointer; font-family: var(--font-head);
+  letter-spacing: 0.06em;
+  transition: all 0.2s; white-space: nowrap;
+}
+.gif-search-btn:hover { border-color: var(--accent); background: rgba(0,229,255,0.06); }
+.gif-close-btn {
+  background: transparent; border: none; color: var(--muted);
+  font-size: 1rem; cursor: pointer; padding: 0 4px; flex-shrink: 0;
+  transition: color 0.15s;
+}
+.gif-close-btn:hover { color: var(--accent2); }
+.gif-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 72px;
+  gap: 4px;
+  padding: 8px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+.gif-grid::-webkit-scrollbar { width: 3px; }
+.gif-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.gif-item {
+  cursor: pointer; border-radius: 4px; overflow: hidden;
+  background: var(--surface);
+  transition: transform 0.15s, box-shadow 0.15s;
+  height: 72px;
+}
+.gif-item:hover { transform: scale(1.04); box-shadow: 0 0 10px rgba(0,229,255,0.3); }
+.gif-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gif-status {
+  padding: 20px; text-align: center;
+  font-family: var(--font-head); font-size: 0.6rem;
+  color: var(--muted); letter-spacing: 0.08em;
+}
+.chat-gif-btn {
+  background: transparent; border: 1px solid var(--border);
+  color: var(--muted); border-radius: 6px;
+  width: 32px; height: 32px; cursor: pointer; flex-shrink: 0;
+  font-size: 0.55rem; font-family: var(--font-head); font-weight: 700;
+  letter-spacing: 0.04em;
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.chat-gif-btn:hover, .chat-gif-btn.active {
+  border-color: var(--accent); color: var(--accent);
+  box-shadow: 0 0 8px rgba(0,229,255,0.2);
+}
+/* GIF image in bubble */
+.chat-gif-img {
+  max-width: 200px; max-height: 160px;
+  border-radius: 8px; display: block;
+  cursor: pointer;
+}
+/* Wrap each chat section in relative for gif-picker positioning */
+.chat-section-wrap, .chat-drawer-panel { position: relative; }
 
 /* System messages */
 .chat-sys {
@@ -735,10 +899,10 @@ select option { background: #111827; }
   50% { opacity: 0.4; }
 }
 
-/* ticker-scroll keyframe: from center offset to one full text width left */
-@keyframes ticker-scroll {
-  0%   { transform: translateX(var(--ticker-start, 0px)); }
-  100% { transform: translateX(var(--ticker-shift, -50%)); }
+/* ticker-loop: сдвиг ровно на один unit-блок, затем мгновенный сброс */
+@keyframes ticker-loop {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(calc(-1 * var(--ticker-unit, 200px))); }
 }
 
 /* ── Tuner row ────────────────────────────────── */
@@ -937,6 +1101,10 @@ select option { background: #111827; }
   .tuner-row .crt-dots {
     width: 148px;
   }
+}
+@media (max-width: 679px) {
+  .crt-namestrip,
+  .crt-dots { display: none; }
 }
 
 /* Name strip below frame */
@@ -1142,12 +1310,19 @@ input[type=range]::-moz-range-thumb {
 .svc-icon { font-size: 11px; line-height: 1; }
 
 .np-stop {
-  background: transparent; border: 1px solid rgba(255,60,172,0.4); color: var(--accent2);
-  font-family: var(--font-head); font-size: 0.58rem; letter-spacing: 0.1em;
-  padding: 7px 13px; border-radius: 4px; cursor: pointer; text-transform: uppercase;
-  transition: all 0.2s; flex-shrink: 0;
+  background: transparent;
+  border: 1px solid rgba(255,60,172,0.4);
+  color: var(--accent2);
+  font-size: 1rem; line-height: 1;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
 }
-.np-stop:hover { background: rgba(255,60,172,0.1); box-shadow: 0 0 12px rgba(255,60,172,0.3); }
+.np-stop:hover { background: rgba(255,60,172,0.1); box-shadow: 0 0 12px rgba(255,60,172,0.3); transform: scale(1.1); }
 
 /* ── Favourite button in now-playing bar ─────── */
 .np-fav {
@@ -1175,7 +1350,54 @@ input[type=range]::-moz-range-thumb {
   background: rgba(255,60,172,0.08);
 }
 .np-fav.active:hover { transform: scale(1.1); }
-@media (max-width: 679px) { #controls-fav { display: none; } }
+@media (max-width: 679px) {
+  #controls-fav { display: none; }
+  /* На тач-устройствах убираем :hover transform — он залипает после tap */
+  .np-fav:hover, .np-fav.active:hover,
+  .np-rec:hover,
+  .np-stop:hover { transform: none; box-shadow: none; background: transparent; }
+  /* active-state scale только для нужных состояний */
+  .np-fav.active  { transform: none; }
+  .np-rec.recording { transform: none; }
+  /* Тап-фидбек через :active вместо :hover */
+  .np-fav:active, .np-rec:active, .np-stop:active { transform: scale(0.92); transition: transform 0.08s; }
+}
+
+/* ── Record button in now-playing ────────────── */
+.np-rec {
+  background: transparent;
+  border: 1px solid rgba(255,60,60,0.35);
+  color: rgba(255,80,80,0.7);
+  font-size: 0.75rem; line-height: 1;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+}
+.np-rec:hover {
+  border-color: #ff4444;
+  color: #ff4444;
+  box-shadow: 0 0 12px rgba(255,60,60,0.35);
+  transform: scale(1.1);
+}
+.np-rec.recording {
+  border-color: #ff2222;
+  color: #ff2222;
+  box-shadow: 0 0 14px rgba(255,30,30,0.5);
+  background: rgba(255,30,30,0.08);
+  animation: rec-pulse 1.2s ease-in-out infinite;
+}
+@keyframes rec-pulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(255,30,30,0.4); }
+  50%       { box-shadow: 0 0 20px rgba(255,30,30,0.7); }
+}
+.np-rec-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: currentColor;
+}
 
 /* ── Favourites load button in controls ──────── */
 .fav-btn {
@@ -1518,6 +1740,88 @@ input[type=range]::-moz-range-thumb {
   border-radius: 5px; border: 1px solid rgba(0,229,255,0.25); transition: all 0.18s;
 }
 .about-link:hover { background: rgba(0,229,255,0.08); box-shadow: 0 0 10px rgba(0,229,255,0.15); }
+
+/* ── Visualizer ───────────────────────────────── */
+.viz-section {
+  width: 60%;
+  margin: -6px auto 16px;
+  padding: 0;
+  box-sizing: border-box;
+}
+@media (max-width: 679px) {
+  .viz-section { width: 100%; padding: 0 16px; margin: -4px auto 10px; }
+}
+.viz-outer {
+  position: relative;
+  border-radius: 14px;
+  padding: 2px;
+  background: linear-gradient(135deg,
+    rgba(0,229,255,0.4) 0%,
+    rgba(255,60,172,0.25) 50%,
+    rgba(0,229,255,0.18) 100%);
+  box-shadow:
+    0 0 0 1px rgba(0,229,255,0.06),
+    0 8px 32px rgba(0,0,0,0.7),
+    0 0 50px rgba(0,229,255,0.07),
+    inset 0 0 0 1px rgba(255,255,255,0.03);
+}
+.viz-glass {
+  position: relative;
+  background: rgba(7, 10, 20, 0.88);
+  border-radius: 12px;
+  height: 80px;
+  overflow: hidden;
+}
+/* horizontal scanlines */
+.viz-glass::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 4;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px, transparent 2px,
+    rgba(0,0,0,0.2) 2px, rgba(0,0,0,0.2) 3px
+  );
+  pointer-events: none;
+}
+/* top glare streak — glass feel */
+.viz-glass::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 22px; z-index: 5;
+  background: linear-gradient(180deg,
+    rgba(255,255,255,0.055) 0%,
+    rgba(255,255,255,0.01) 70%,
+    transparent 100%);
+  pointer-events: none;
+}
+/* ambient bloom under bars */
+.viz-glow-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background: radial-gradient(ellipse 80% 140% at 50% 115%,
+    rgba(0,229,255,0.1) 0%, transparent 65%);
+  pointer-events: none;
+}
+/* side vignette */
+.viz-fade {
+  position: absolute; inset: 0; z-index: 3;
+  background: linear-gradient(90deg,
+    rgba(7,10,20,0.75) 0%, transparent 7%,
+    transparent 93%, rgba(7,10,20,0.75) 100%);
+  pointer-events: none;
+}
+#viz-canvas {
+  display: block;
+  width: 100%; height: 100%;
+  position: relative; z-index: 1;
+}
+.viz-idle-label {
+  position: absolute; inset: 0; z-index: 6;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-head); font-size: 0.48rem;
+  letter-spacing: 0.28em; color: rgba(0,229,255,0.22);
+  pointer-events: none;
+  transition: opacity 0.6s;
+}
+.viz-idle-label.hidden { opacity: 0; }
 </style>
 <body>
 <div class="blob2"></div>
@@ -1586,6 +1890,10 @@ input[type=range]::-moz-range-thumb {
             <div class="skin-preview" style="background:linear-gradient(135deg,#111316 40%,#a8b2c066)"></div>
             <span data-i18n="skin_ash">Пепел</span>
           </div>
+          <div class="skin-item" data-skin="mint" onclick="setSkin('mint')">
+            <div class="skin-preview" style="background:linear-gradient(135deg,#232931 40%,#4ecca366)"></div>
+            <span data-i18n="skin_mint">Мята</span>
+          </div>
         </div>
       </div>
 
@@ -1623,16 +1931,24 @@ input[type=range]::-moz-range-thumb {
 </header>
 
 <div class="controls">
-  <div class="select-wrap">
-    <select id="tag-select" onchange="onTagChange()">
-      <!-- populated by JS from saved/default tags -->
-    </select>
+  <div class="select-wrap" id="tag-wrap">
+    <select id="tag-select" onchange="onTagChange()"></select>
+    <button class="sel-trigger" id="tag-trigger" onclick="toggleSelDropdown('tag')">
+      <span id="tag-trigger-label">—</span>
+    </button>
+    <div class="sel-dropdown" id="tag-dropdown">
+      <div class="sel-dropdown-list" id="tag-dropdown-list"></div>
+    </div>
   </div>
-  <button class="edit-tags-btn" onclick="openTagEditor()" title="Редактировать теги">⚙</button>
+  <button class="edit-tags-btn" onclick="openTagEditor()" data-i18n-title="edit_tags_title" title="Редактировать теги">⚙</button>
   <div class="select-wrap" id="range-wrap">
-    <select id="range-select" onchange="loadStations()">
-      <option value="0" data-i18n-band="1">Band 1</option>
-    </select>
+    <select id="range-select" onchange="loadStations()"></select>
+    <button class="sel-trigger" id="range-trigger" onclick="toggleSelDropdown('range')">
+      <span id="range-trigger-label">Band 1</span>
+    </button>
+    <div class="sel-dropdown" id="range-dropdown">
+      <div class="sel-dropdown-list" id="range-dropdown-list"></div>
+    </div>
   </div>
   <div class="fav-dropdown-wrap" id="fav-dropdown-wrap">
     <button class="fav-btn" id="fav-btn" onclick="toggleFavDropdown()"><svg class="fav-heart-icon" viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> <span id="fav-btn-label">Избранное</span> <span class="fav-count" id="fav-count">0</span></button>
@@ -1649,7 +1965,7 @@ input[type=range]::-moz-range-thumb {
 <div class="modal-overlay" id="tag-modal" onclick="onModalOverlayClick(event)">
   <div class="modal">
     <div class="modal-header">
-      <span class="modal-title">⬤ Редактор тегов</span>
+      <span class="modal-title" data-i18n="tag_editor_title">⬤ Редактор тегов</span>
       <button class="modal-close" onclick="closeTagEditor()">✕</button>
     </div>
     <div class="modal-body">
@@ -1658,12 +1974,12 @@ input[type=range]::-moz-range-thumb {
         <input class="add-tag-input" id="add-tag-input" type="text"
                placeholder="новый тег, например: lofi" id="tag-new-input"
                onkeydown="if(event.key==='Enter')addTag()">
-        <button class="add-tag-btn" onclick="addTag()">+ Добавить</button>
+        <button class="add-tag-btn" onclick="addTag()" data-i18n="btn_add_tag">+ Добавить</button>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="reset-tags-btn" onclick="resetTags()">↺ По умолчанию</button>
-      <button class="save-tags-btn" onclick="saveTagsAndClose()">✓ Сохранить</button>
+      <button class="reset-tags-btn" onclick="resetTags()" data-i18n="btn_reset_tags">↺ По умолчанию</button>
+      <button class="save-tags-btn" onclick="saveTagsAndClose()" data-i18n="btn_save_tags">✓ Сохранить</button>
     </div>
   </div>
 </div>
@@ -1744,6 +2060,18 @@ input[type=range]::-moz-range-thumb {
   </div><!-- .tuner-row -->
 </div><!-- .tuner-section -->
 
+<!-- ── Visualizer ─────────────────────────────── -->
+<div class="viz-section">
+  <div class="viz-outer">
+    <div class="viz-glass">
+      <div class="viz-glow-bg"></div>
+      <canvas id="viz-canvas"></canvas>
+      <div class="viz-fade"></div>
+      <div class="viz-idle-label" id="viz-idle">NO SIGNAL</div>
+    </div>
+  </div>
+</div>
+
 <div class="bottom-pad"></div>
 </div><!-- .wrap -->
 
@@ -1765,6 +2093,7 @@ input[type=range]::-moz-range-thumb {
     <div class="chat-input-row">
       <input class="chat-nick-input" id="chat-nick-desktop" maxlength="16" placeholder="Ник" />
       <input class="chat-text-input" id="chat-input-desktop" maxlength="280" placeholder="Сообщение..." onkeydown="if(event.key==='Enter')chatSend('desktop')" />
+      <button class="chat-gif-btn" id="gif-btn-desktop" onclick="toggleGifPicker('desktop')" title="GIF">GIF</button>
       <button class="chat-share-btn" id="chat-share-desktop" onclick="chatShareStation('desktop')" title="Поделиться станцией" disabled>📡</button>
       <button class="chat-send-btn" onclick="chatSend('desktop')">➤</button>
     </div>
@@ -1792,6 +2121,7 @@ input[type=range]::-moz-range-thumb {
   <div class="chat-input-row">
     <input class="chat-nick-input" id="chat-nick-mobile" maxlength="16" placeholder="Ник" />
     <input class="chat-text-input" id="chat-input-mobile" maxlength="280" placeholder="Сообщение..." onkeydown="if(event.key==='Enter')chatSend('mobile')" />
+    <button class="chat-gif-btn" id="gif-btn-mobile" onclick="toggleGifPicker('mobile')" title="GIF">GIF</button>
     <button class="chat-share-btn" id="chat-share-mobile" onclick="chatShareStation('mobile')" title="Поделиться" disabled>📡</button>
     <button class="chat-send-btn" onclick="chatSend('mobile')">➤</button>
   </div>
@@ -1815,7 +2145,8 @@ input[type=range]::-moz-range-thumb {
     <a class="svc-btn yandex"  id="svc-yandex"  href="#" target="_blank" rel="noopener"><span class="svc-icon">🎧</span>Яндекс</a>
   </div>
   <button class="np-fav" id="np-fav" onclick="toggleFavourite()" title="В избранное"><svg class="fav-heart-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
-  <button class="np-stop" id="np-playstop" onclick="togglePlayStop()">▶ Play</button>
+  <button class="np-rec" id="np-rec" onclick="toggleRec()" title="Запись эфира"><div class="np-rec-dot"></div></button>
+  <button class="np-stop" id="np-playstop" onclick="togglePlayStop()" title="Play / Stop"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg></button>
 </div>
 
 <!-- ── Info modals ────────────────────────────── -->
@@ -1829,7 +2160,7 @@ input[type=range]::-moz-range-thumb {
   </div>
 </div>
 
-<audio id="audio-player" preload="none"></audio>
+<audio id="audio-player" preload="none" crossorigin="anonymous"></audio>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
 <script>
 // ─── State ────────────────────────────────────────────────
@@ -2241,16 +2572,14 @@ function crtNoSignal() {
 }
 
 // ─── Ticker ───────────────────────────────────────────────
-const TICKER_SPEED = 40; // px per second — slow, readable
+// ─── Ticker ───────────────────────────────────────────────
+const TICKER_SPEED = 55; // px per second
 
-function isMobile() {
-  return window.innerWidth < 680;
-}
+function isMobile() { return window.innerWidth < 680; }
 
 function setTicker(name, searching = false) {
   const mobile = isMobile();
 
-  // Show correct ticker version
   const desktopWrap = document.getElementById('ticker-wrap-desktop');
   const mobileWrap  = document.getElementById('ticker-wrap-mobile');
   if (mobile) {
@@ -2263,52 +2592,47 @@ function setTicker(name, searching = false) {
 
   const suffix = mobile ? '-mobile' : '-desktop';
   const inner  = document.getElementById('ticker-inner' + suffix);
-  const text1  = document.getElementById('ticker-text' + suffix);
-  const text2  = document.getElementById('ticker-text' + suffix + '2');
   const led    = document.getElementById('ticker-led' + suffix);
+  if (!inner) return;
 
   const label = name ? name.toUpperCase() : 'NO SIGNAL';
-  // Separator between repeats
-  const content = label + '     ◆     ';
-  text1.textContent = content;
-  text2.textContent = content;
+  const sep   = '     ◆     ';
+  const unit  = label + sep;
+  const cls   = 'ticker-text' + (searching ? ' searching' : '');
 
-  text1.className = 'ticker-text' + (searching ? ' searching' : '');
-  text2.className = 'ticker-text' + (searching ? ' searching' : '');
-  led.className   = 'ticker-led'  + (searching ? ' searching' : (name ? '' : ' off'));
-
-  // Stop animation for measurement
+  // Останавливаем анимацию перед перестройкой
   inner.style.animation = 'none';
-  inner.style.transform = 'none';
-  inner.offsetWidth; // force reflow
+  inner.style.transform = 'translateX(0)';
 
-  // Measure single text block width (text1 + its padding)
-  const oneW = text1.offsetWidth;
-  if (oneW === 0) return;
+  // Вставляем probe прямо в inner — наследует правильный font/letter-spacing
+  inner.innerHTML = `<span class="${cls}" id="_ticker_probe" style="visibility:hidden;position:absolute">${unit}</span>`;
+  inner.offsetWidth; // reflow — шрифт Orbitron должен быть уже загружен
 
-  // Get container width to calculate center start offset
-  const wrap = inner.parentElement;
-  const wrapW = wrap ? wrap.offsetWidth : 0;
-  // Start: text centered in container; end: one full block shifted left from start
-  const startX = Math.max(0, (wrapW - oneW) / 2);
+  const probe = document.getElementById('_ticker_probe');
+  const unitW = probe ? probe.offsetWidth : 120;
 
-  // Duration = one full text block / speed (constant regardless of length)
-  const dur = (oneW + startX) / TICKER_SPEED;
+  const wrapW = inner.parentElement?.offsetWidth || 400;
 
-  // Set CSS custom properties
-  inner.style.setProperty('--ticker-start', `${startX}px`);
-  inner.style.setProperty('--ticker-shift', `-${oneW}px`);
+  // Количество копий = достаточно чтобы занять 2.5× ширину контейнера + всегда минимум 5
+  const copies = Math.max(5, Math.ceil(wrapW * 2.5 / unitW) + 1);
 
-  // Re-enable animation — starts from center
-  inner.style.animation = `ticker-scroll ${dur}s linear infinite`;
+  inner.innerHTML = Array.from({length: copies}, () =>
+    `<span class="${cls}">${unit}</span>`
+  ).join('');
+
+  led.className = 'ticker-led' + (searching ? ' searching' : (name ? '' : ' off'));
+
+  const dur = unitW / TICKER_SPEED;
+  inner.style.setProperty('--ticker-unit', `${unitW}px`);
+  inner.style.animation = `ticker-loop ${dur}s linear infinite`;
 }
 
 function clearTicker() {
   setTicker('', false);
-  const led1 = document.getElementById('ticker-led-desktop');
-  const led2 = document.getElementById('ticker-led-mobile');
-  led1.className = 'ticker-led off';
-  led2.className = 'ticker-led off';
+  ['ticker-led-desktop','ticker-led-mobile'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.className = 'ticker-led off';
+  });
 }
 
 // Recheck mobile on resize
@@ -2318,6 +2642,10 @@ window.addEventListener('resize', () => {
 
 // Init: build tag select from saved/default list, then fetch count and auto-load
 window.addEventListener('DOMContentLoaded', () => {
+  // Миграция: убираем лишние поля из уже сохранённых избранных
+  const stored = loadFavs();
+  if (stored.length) saveFavs(stored.map(trimStation));
+
   const crtImg = document.getElementById('crt-img');
   if (crtImg) crtImg.onerror = crtImgError;
   loadSkin();
@@ -2444,10 +2772,10 @@ function setPlayStopBtn(playing) {
   const btn = document.getElementById('np-playstop');
   if (!btn) return;
   if (playing) {
-    btn.textContent = t('btn_stop');
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="4" width="4" height="16"/><rect x="15" y="4" width="4" height="16"/></svg>';
     btn.classList.add('is-playing');
   } else {
-    btn.textContent = t('btn_play');
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>';
     btn.classList.remove('is-playing');
   }
 }
@@ -2484,6 +2812,17 @@ function stopStation(silent = false) {
 // Stored in localStorage as array of station objects
 const FAV_KEY = 'radiowaveFavourites';
 
+// Поля которые реально нужны — остальное выбрасываем
+const FAV_FIELDS = ['stationuuid','name','url','url_resolved','homepage',
+                    'favicon','tags','country','countrycode','state',
+                    'language','languagecodes','bitrate'];
+
+function trimStation(s) {
+  const out = {};
+  FAV_FIELDS.forEach(k => { if (s[k] !== undefined && s[k] !== null && s[k] !== '') out[k] = s[k]; });
+  return out;
+}
+
 function loadFavs() {
   try { return JSON.parse(localStorage.getItem(FAV_KEY)) || []; }
   catch { return []; }
@@ -2503,7 +2842,7 @@ function toggleFavourite() {
   let favs = loadFavs();
   const idx = favs.findIndex(f => f.stationuuid === currentStation.stationuuid);
   if (idx === -1) {
-    favs.push(currentStation);
+    favs.push(trimStation(currentStation));
     showFavToast(`♥ ${currentStation.name} ${t('fav_added')}`);
   } else {
     favs.splice(idx, 1);
@@ -2632,6 +2971,7 @@ function renderFavDropdown() {
 
     item.onclick = () => {
       closeFavDropdown();
+      currentStation = st;
       const audio = document.getElementById('audio-player');
       audio.src = st.url_resolved || st.url;
       audio.play().catch(() => {});
@@ -2640,6 +2980,12 @@ function renderFavDropdown() {
       setTicker(st.name, false);
       updateFavBtn();
       clearTrackMeta();
+      const frame = document.getElementById('crt-frame');
+      if (st.homepage && st.homepage.startsWith('http')) {
+        frame.classList.add('has-link');
+      } else {
+        frame.classList.remove('has-link');
+      }
     };
 
     list.appendChild(item);
@@ -2819,6 +3165,12 @@ function appendChatEl(el, isMine = false) {
 function renderChatMessage(data, isMine) {
   if (data.type === 'station') {
     appendChatEl(buildStationCard(data, isMine), isMine);
+  } else if (data.type === 'gif') {
+    const img = document.createElement('img');
+    img.className = 'chat-gif-img';
+    img.src = data.url;
+    img.alt = 'GIF';
+    appendChatEl(buildGifMsg(data.nick || 'anon', img, isMine), isMine);
   } else {
     appendChatEl(buildTextMsg(data, isMine), isMine);
   }
@@ -3082,7 +3434,7 @@ function initChatDelegation() {
         if (!stObj) return;
         let favs = loadFavs();
         const idx = favs.findIndex(f => f.stationuuid === stObj.stationuuid);
-        if (idx === -1) { favs.push(stObj); showFavToast(`♥ ${stObj.name} ${t('fav_added')}`); }
+        if (idx === -1) { favs.push(trimStation(stObj)); showFavToast(`♥ ${stObj.name} ${t('fav_added')}`); }
         else            { favs.splice(idx, 1); showFavToast(`♡ ${stObj.name} ${t('fav_removed')}`); }
         saveFavs(favs);
         updateFavCount();
@@ -3208,6 +3560,9 @@ const SKINS = {
   ash:   { '--accent':'#a8b2c0','--accent2':'#7c8fa0','--accent3':'#d0d8e0',
            '--bg':'#111316','--bg2':'#181b1f','--surface':'#1f2328','--border':'#2c3038',
            '--text':'#c8d0da','--muted':'#4a5260' },
+  mint:  { '--accent':'#4ecca3','--accent2':'#eeeeee','--accent3':'#4ecca3',
+           '--bg':'#232931','--bg2':'#2b3140','--surface':'#393e46','--border':'#4a5160',
+           '--text':'#eeeeee','--muted':'#7a8a9a' },
 };
 function setSkin(name) {
   const skin = SKINS[name]; if (!skin) return;
@@ -3225,7 +3580,7 @@ const LANG_KEY = 'radiowaveLang';
 const I18N = {
   ru: {
     skins:'СКИНЫ', skin_dark:'Тёмный', skin_light:'Светлый', skin_neon:'Неон', skin_retro:'Ретро',
-    skin_sunset:'Закат', skin_deep:'Глубина', skin_ash:'Пепел',
+    skin_sunset:'Закат', skin_deep:'Глубина', skin_ash:'Пепел', skin_mint:'Мята',
     menu:'МЕНЮ', menu_settings:'Настройки', menu_hotkeys:'Горячие клавиши', menu_about:'О проекте',
     modal_settings:'Настройки', modal_hotkeys:'Горячие клавиши', modal_about:'О проекте',
     fav_label:'Избранное', tag_edit_title:'Редактор тегов',
@@ -3235,6 +3590,12 @@ const I18N = {
     about_desc:'Онлайн-радио плеер на основе открытой базы данных radio-browser.info. Более 30 000 станций по всему миру.',
     btn_clear:'Очистить',
     btn_stop:'■ Стоп', btn_play:'▶ Играть',
+    export_m3u:'Экспорт избранного M3U', export_m3u_desc:'playlist для медиаплееров',
+    export_json:'Экспорт избранного JSON', export_json_desc:'резервная копия',
+    import_json:'Импорт избранного JSON', import_json_desc:'восстановление / слияние',
+    tag_editor_title:'⬤ Редактор тегов',
+    btn_add_tag:'+ Добавить', btn_reset_tags:'↺ По умолчанию', btn_save_tags:'✓ Сохранить',
+    edit_tags_title:'Редактировать теги',
     chat_station:'Станция', chat_listen:'▶ Нажми, чтобы слушать',
     chat_title:'⬤ Эфирный чат', chat_close:'▼ Закрыть',
     lang_code:'RU',
@@ -3253,7 +3614,7 @@ const I18N = {
   },
   en: {
     skins:'SKINS', skin_dark:'Dark', skin_light:'Light', skin_neon:'Neon', skin_retro:'Retro',
-    skin_sunset:'Sunset', skin_deep:'Deep', skin_ash:'Ash',
+    skin_sunset:'Sunset', skin_deep:'Deep', skin_ash:'Ash', skin_mint:'Mint',
     menu:'MENU', menu_settings:'Settings', menu_hotkeys:'Hotkeys', menu_about:'About',
     modal_settings:'Settings', modal_hotkeys:'Keyboard Shortcuts', modal_about:'About',
     fav_label:'Favourites', tag_edit_title:'Tag Editor',
@@ -3263,6 +3624,12 @@ const I18N = {
     about_desc:'Online radio player powered by the open radio-browser.info database. Over 30,000 stations worldwide.',
     btn_clear:'Clear',
     btn_stop:'■ Stop', btn_play:'▶ Play',
+    export_m3u:'Export Favourites M3U', export_m3u_desc:'playlist for media players',
+    export_json:'Export Favourites JSON', export_json_desc:'backup copy',
+    import_json:'Import Favourites JSON', import_json_desc:'restore / merge',
+    tag_editor_title:'⬤ Tag Editor',
+    btn_add_tag:'+ Add', btn_reset_tags:'↺ Defaults', btn_save_tags:'✓ Save',
+    edit_tags_title:'Edit tags',
     chat_station:'Station', chat_listen:'▶ Click to listen',
     chat_title:'⬤ Live Chat', chat_close:'▼ Close',
     lang_code:'EN',
@@ -3281,7 +3648,7 @@ const I18N = {
   },
   de: {
     skins:'SKINS', skin_dark:'Dunkel', skin_light:'Hell', skin_neon:'Neon', skin_retro:'Retro',
-    skin_sunset:'Sonnenuntergang', skin_deep:'Tief', skin_ash:'Asche',
+    skin_sunset:'Sonnenuntergang', skin_deep:'Tief', skin_ash:'Asche', skin_mint:'Minze',
     menu:'MENÜ', menu_settings:'Einstellungen', menu_hotkeys:'Tastenkürzel', menu_about:'Über das Projekt',
     modal_settings:'Einstellungen', modal_hotkeys:'Tastenkürzel', modal_about:'Über das Projekt',
     fav_label:'Favoriten', tag_edit_title:'Tag-Editor',
@@ -3291,6 +3658,12 @@ const I18N = {
     about_desc:'Online-Radioplayer auf Basis der offenen Datenbank radio-browser.info. Über 30.000 Sender weltweit.',
     btn_clear:'Löschen',
     btn_stop:'■ Stopp', btn_play:'▶ Abspielen',
+    export_m3u:'Favoriten exportieren M3U', export_m3u_desc:'Playlist für Mediaplayer',
+    export_json:'Favoriten exportieren JSON', export_json_desc:'Sicherungskopie',
+    import_json:'Favoriten importieren JSON', import_json_desc:'Wiederherstellen / Zusammenführen',
+    tag_editor_title:'⬤ Tag-Editor',
+    btn_add_tag:'+ Hinzufügen', btn_reset_tags:'↺ Standard', btn_save_tags:'✓ Speichern',
+    edit_tags_title:'Tags bearbeiten',
     chat_station:'Station', chat_listen:'▶ Zum Hören klicken',
     chat_title:'⬤ Live-Chat', chat_close:'▼ Schließen',
     lang_code:'DE',
@@ -3309,7 +3682,7 @@ const I18N = {
   },
   fr: {
     skins:'THÈMES', skin_dark:'Sombre', skin_light:'Clair', skin_neon:'Néon', skin_retro:'Rétro',
-    skin_sunset:'Coucher', skin_deep:'Abyssal', skin_ash:'Cendre',
+    skin_sunset:'Coucher', skin_deep:'Abyssal', skin_ash:'Cendre', skin_mint:'Menthe',
     menu:'MENU', menu_settings:'Paramètres', menu_hotkeys:'Raccourcis', menu_about:'À propos',
     modal_settings:'Paramètres', modal_hotkeys:'Raccourcis clavier', modal_about:'À propos',
     fav_label:'Favoris', tag_edit_title:'Éditeur de tags',
@@ -3319,6 +3692,12 @@ const I18N = {
     about_desc:'Lecteur radio en ligne basé sur radio-browser.info. Plus de 30 000 stations dans le monde.',
     btn_clear:'Effacer',
     btn_stop:'■ Stop', btn_play:'▶ Lancer',
+    export_m3u:'Exporter favoris M3U', export_m3u_desc:'playlist pour lecteurs multimédia',
+    export_json:'Exporter favoris JSON', export_json_desc:'copie de sauvegarde',
+    import_json:'Importer favoris JSON', import_json_desc:'restaurer / fusionner',
+    tag_editor_title:'⬤ Éditeur de tags',
+    btn_add_tag:'+ Ajouter', btn_reset_tags:'↺ Défaut', btn_save_tags:'✓ Enregistrer',
+    edit_tags_title:'Modifier les tags',
     chat_station:'Station', chat_listen:'▶ Cliquez pour écouter',
     chat_title:'⬤ Chat en direct', chat_close:'▼ Fermer',
     lang_code:'FR',
@@ -3337,7 +3716,7 @@ const I18N = {
   },
   es: {
     skins:'TEMAS', skin_dark:'Oscuro', skin_light:'Claro', skin_neon:'Neón', skin_retro:'Retro',
-    skin_sunset:'Atardecer', skin_deep:'Profundo', skin_ash:'Ceniza',
+    skin_sunset:'Atardecer', skin_deep:'Profundo', skin_ash:'Ceniza', skin_mint:'Menta',
     menu:'MENÚ', menu_settings:'Configuración', menu_hotkeys:'Atajos', menu_about:'Acerca de',
     modal_settings:'Configuración', modal_hotkeys:'Atajos de teclado', modal_about:'Acerca de',
     fav_label:'Favoritos', tag_edit_title:'Editor de etiquetas',
@@ -3347,6 +3726,12 @@ const I18N = {
     about_desc:'Reproductor de radio en línea basado en radio-browser.info. Más de 30.000 estaciones.',
     btn_clear:'Borrar',
     btn_stop:'■ Parar', btn_play:'▶ Reproducir',
+    export_m3u:'Exportar favoritos M3U', export_m3u_desc:'playlist para reproductores',
+    export_json:'Exportar favoritos JSON', export_json_desc:'copia de seguridad',
+    import_json:'Importar favoritos JSON', import_json_desc:'restaurar / fusionar',
+    tag_editor_title:'⬤ Editor de etiquetas',
+    btn_add_tag:'+ Añadir', btn_reset_tags:'↺ Predeterminado', btn_save_tags:'✓ Guardar',
+    edit_tags_title:'Editar etiquetas',
     chat_station:'Estación', chat_listen:'▶ Haz clic para escuchar',
     chat_title:'⬤ Chat en vivo', chat_close:'▼ Cerrar',
     lang_code:'ES',
@@ -3365,7 +3750,7 @@ const I18N = {
   },
   ja: {
     skins:'スキン', skin_dark:'ダーク', skin_light:'ライト', skin_neon:'ネオン', skin_retro:'レトロ',
-    skin_sunset:'サンセット', skin_deep:'ディープ', skin_ash:'アッシュ',
+    skin_sunset:'サンセット', skin_deep:'ディープ', skin_ash:'アッシュ', skin_mint:'ミント',
     menu:'メニュー', menu_settings:'設定', menu_hotkeys:'ショートカット', menu_about:'について',
     modal_settings:'設定', modal_hotkeys:'キーボードショートカット', modal_about:'について',
     fav_label:'お気に入り', tag_edit_title:'タグ編集',
@@ -3375,6 +3760,12 @@ const I18N = {
     about_desc:'radio-browser.info のオープンデータベースを使ったオンラインラジオプレーヤー。世界中の3万以上のステーション。',
     btn_clear:'削除',
     btn_stop:'■ 停止', btn_play:'▶ 再生',
+    export_m3u:'お気に入りをエクスポート M3U', export_m3u_desc:'メディアプレーヤー用プレイリスト',
+    export_json:'お気に入りをエクスポート JSON', export_json_desc:'バックアップ',
+    import_json:'お気に入りをインポート JSON', import_json_desc:'復元 / 統合',
+    tag_editor_title:'⬤ タグ編集',
+    btn_add_tag:'+ 追加', btn_reset_tags:'↺ デフォルト', btn_save_tags:'✓ 保存',
+    edit_tags_title:'タグを編集',
     chat_station:'ステーション', chat_listen:'▶ クリックして聴く',
     chat_title:'⬤ ライブチャット', chat_close:'▼ 閉じる',
     lang_code:'JP',
@@ -3397,6 +3788,7 @@ function t(key) { return (I18N[currentLang] || I18N.ru)[key] || key; }
 
 function applyLang() {
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.dataset.i18nTitle); });
   const favLabel = document.getElementById('fav-btn-label');
   if (favLabel) favLabel.textContent = t('fav_label');
   document.querySelectorAll('.chat-text-input').forEach(el => el.placeholder = t('chat_placeholder'));
@@ -3463,6 +3855,18 @@ function openInfoModal(type) {
       <div class="settings-row">
         <div><div class="settings-label">${t('menu_clear_confirm').replace('?','').replace('¿','')}</div><div class="settings-desc">—</div></div>
         <button class="settings-action danger" onclick="closeInfoModal();clearFavsConfirm()">${t('btn_clear')}</button>
+      </div>
+      <div class="settings-row">
+        <div><div class="settings-label">${t('export_m3u')}</div><div class="settings-desc">${t('export_m3u_desc')}</div></div>
+        <button class="settings-action" onclick="closeInfoModal();exportFavM3U()">↓ M3U</button>
+      </div>
+      <div class="settings-row">
+        <div><div class="settings-label">${t('export_json')}</div><div class="settings-desc">${t('export_json_desc')}</div></div>
+        <button class="settings-action" onclick="closeInfoModal();exportFavJSON()">↓ JSON</button>
+      </div>
+      <div class="settings-row">
+        <div><div class="settings-label">${t('import_json')}</div><div class="settings-desc">${t('import_json_desc')}</div></div>
+        <button class="settings-action" onclick="closeInfoModal();importFavJSON()">↑ JSON</button>
       </div>`;
   } else if (type === 'hotkeys') {
     title.textContent = t('modal_hotkeys');
@@ -3493,6 +3897,621 @@ function clearFavsConfirm() {
     showFavToast('🗑 ' + t('menu_clear_confirm').replace('?','').replace('¿',''));
   }
 }
+
+
+// ─── Visualizer — реальный FFT через Web Audio API ────────
+(function () {
+  let actx  = null;   // AudioContext
+  let anal  = null;   // AnalyserNode
+  let gain  = null;   // GainNode (пассивный, громкость не меняем)
+  let src   = null;   // MediaElementSourceNode (один раз на весь lifetime)
+  let raf   = null;
+  let alive = false;
+
+  // peak-hold на каждый бар
+  const BARS = 96;
+  const peaks     = new Float32Array(BARS);
+  const peakDecay = new Float32Array(BARS);
+
+  function css(v, fb) {
+    return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || fb;
+  }
+
+  /* Создаём AudioContext и подключаем audio элемент ОДИН РАЗ.
+     crossorigin="anonymous" уже стоит на <audio>, поэтому
+     для станций у которых CORS открыт — будет реальный FFT.
+     Для станций без CORS браузер заблокирует анализ, но аудио
+     продолжит играть нормально (src.connect fallback silent). */
+  function ensureCtx() {
+    if (actx) return true;
+    const audio = document.getElementById('audio-player');
+    if (!audio) return false;
+    try {
+      actx = new (window.AudioContext || window.webkitAudioContext)();
+      anal = actx.createAnalyser();
+      anal.fftSize = 256;
+      anal.smoothingTimeConstant = 0.82;
+      gain = actx.createGain();
+      gain.gain.value = 1;          // не трогаем громкость
+
+      src = actx.createMediaElementSource(audio);
+      src.connect(gain);
+      gain.connect(anal);
+      anal.connect(actx.destination); // звук идёт дальше — динамики работают
+      return true;
+    } catch (e) {
+      actx = null;
+      return false;
+    }
+  }
+
+  function startViz() {
+    if (!ensureCtx()) return;
+    if (actx.state === 'suspended') actx.resume();
+    // Экспортируем для модуля записи
+    window._vizCtxRef = { actx, gain, anal };
+    alive = true;
+    document.getElementById('viz-idle')?.classList.add('hidden');
+    cancelAnimationFrame(raf);
+    drawLoop();
+  }
+
+  function stopViz() {
+    alive = false;
+    cancelAnimationFrame(raf);
+    const cv = document.getElementById('viz-canvas');
+    if (cv) cv.getContext('2d').clearRect(0, 0, cv.width, cv.height);
+    document.getElementById('viz-idle')?.classList.remove('hidden');
+    peaks.fill(0); peakDecay.fill(0);
+  }
+
+  function drawLoop() {
+    if (!alive) return;
+    raf = requestAnimationFrame(drawLoop);
+
+    const cv = document.getElementById('viz-canvas');
+    if (!cv) return;
+    const ctx = cv.getContext('2d');
+
+    // sync canvas size to CSS size
+    const W = cv.offsetWidth, H = cv.offsetHeight;
+    if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+
+    // get FFT data
+    const bufLen = anal.frequencyBinCount; // = fftSize/2 = 128
+    const fft = new Uint8Array(bufLen);
+    anal.getByteFrequencyData(fft);
+
+    // clear
+    ctx.clearRect(0, 0, W, H);
+
+    const accent  = css('--accent',  '#00e5ff');
+    const accent2 = css('--accent2', '#ff3cac');
+
+    // --- бары ---
+    const barW  = W / BARS;
+    const inner = barW * 0.55;   // ширина самого бара
+    const gap   = (barW - inner) / 2;
+
+    for (let i = 0; i < BARS; i++) {
+      // берём нужный бин FFT (логарифмическое распределение по частотам)
+      const t  = i / BARS;
+      const bi = Math.floor(Math.pow(t, 1.4) * (bufLen - 1));
+      const v  = fft[bi] / 255;            // 0..1
+
+      const bh  = Math.max(2, v * H * 0.90);
+      const x   = i * barW + gap;
+      const cy  = H / 2;
+
+      // peak-hold
+      if (v > peaks[i]) { peaks[i] = v; peakDecay[i] = 0; }
+      else { peakDecay[i] += 0.0018; peaks[i] = Math.max(0, peaks[i] - peakDecay[i]); }
+
+      // --- bar gradient ---
+      const grad = ctx.createLinearGradient(0, cy - bh / 2, 0, cy + bh / 2);
+      grad.addColorStop(0,    accent2 + 'bb');
+      grad.addColorStop(0.35, accent  + 'ff');
+      grad.addColorStop(0.65, accent  + 'ff');
+      grad.addColorStop(1,    accent2 + 'bb');
+      ctx.fillStyle = grad;
+
+      // полупрозрачность: тихий сигнал — прозрачнее
+      ctx.globalAlpha = 0.25 + v * 0.75;
+
+      // зеркало от центра — вверх и вниз
+      ctx.beginPath();
+      if (ctx.roundRect) {
+        ctx.roundRect(x, cy - bh / 2, inner, bh, 2);
+      } else {
+        ctx.rect(x, cy - bh / 2, inner, bh);
+      }
+      ctx.fill();
+
+      // --- peak dot ---
+      const ph = peaks[i] * H * 0.90;
+      if (peaks[i] > 0.04) {
+        ctx.globalAlpha = 0.6 * peaks[i];
+        ctx.fillStyle = accent;
+        const py = cy - ph / 2 - 2;
+        ctx.fillRect(x, py, inner, 1.5);
+        ctx.fillRect(x, cy + ph / 2 + 1, inner, 1.5);
+      }
+    }
+
+    // --- reflection glow под барами ---
+    ctx.globalAlpha = 0.12;
+    const glowGrad = ctx.createLinearGradient(0, H * 0.5, 0, H);
+    glowGrad.addColorStop(0, accent);
+    glowGrad.addColorStop(1, 'transparent');
+    ctx.fillStyle = glowGrad;
+    ctx.fillRect(0, H / 2, W, H / 2);
+
+    ctx.globalAlpha = 1;
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const audio = document.getElementById('audio-player');
+    if (!audio) return;
+    audio.addEventListener('play',  startViz);
+    audio.addEventListener('pause', stopViz);
+    audio.addEventListener('ended', stopViz);
+  });
+})();
+
+// ─── Запись эфира ─────────────────────────────────────────
+(function () {
+  let mediaRec   = null;
+  let recChunks  = [];
+  let recStream  = null;
+  let isRec      = false;
+
+  // Используем уже созданный AudioContext визуализатора если он есть,
+  // иначе создаём свой — через capture stream от audio элемента
+  function startRec() {
+    const audio = document.getElementById('audio-player');
+    if (!audio || audio.paused || !audio.src) {
+      alert('Сначала запустите воспроизведение станции');
+      return;
+    }
+
+    // Пробуем захватить поток через captureStream (Chrome/Edge)
+    // или через MediaElementAudioSourceNode → MediaStreamDestination
+    let stream = null;
+
+    try {
+      // Способ 1: captureStream — самый простой, не требует Web Audio
+      if (typeof audio.captureStream === 'function') {
+        stream = audio.captureStream();
+      } else if (typeof audio.mozCaptureStream === 'function') {
+        stream = audio.mozCaptureStream();
+      }
+    } catch (e) { stream = null; }
+
+    if (!stream || !stream.getAudioTracks().length) {
+      // Способ 2: через Web Audio (если visualizer уже создал ctx и src)
+      try {
+        const w = window._vizCtxRef;   // устанавливается визуализатором ниже
+        if (w && w.actx && w.gain) {
+          const dest = w.actx.createMediaStreamDestination();
+          w.gain.connect(dest);
+          stream = dest.stream;
+        }
+      } catch (e) { stream = null; }
+    }
+
+    if (!stream) {
+      alert('Ваш браузер не поддерживает захват аудио потока.\nИспользуйте Chrome или Edge.');
+      return;
+    }
+
+    recChunks = [];
+    const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+      ? 'audio/webm;codecs=opus'
+      : MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg';
+
+    try {
+      mediaRec = new MediaRecorder(stream, { mimeType: mime });
+    } catch (e) {
+      mediaRec = new MediaRecorder(stream);
+    }
+
+    mediaRec.ondataavailable = e => { if (e.data && e.data.size > 0) recChunks.push(e.data); };
+    mediaRec.onstop = saveRec;
+    mediaRec.start(1000); // chunk каждую секунду
+
+    isRec = true;
+    const btn = document.getElementById('np-rec');
+    if (btn) btn.classList.add('recording');
+  }
+
+  function stopRec() {
+    if (!mediaRec || mediaRec.state === 'inactive') return;
+    mediaRec.stop();
+    isRec = false;
+    const btn = document.getElementById('np-rec');
+    if (btn) btn.classList.remove('recording');
+  }
+
+  function saveRec() {
+    if (!recChunks.length) return;
+    const blob = new Blob(recChunks, { type: recChunks[0].type || 'audio/webm' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    const ts   = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const name = (currentStation?.name || 'radio').replace(/[^a-zA-Zа-яА-Я0-9]/g, '_');
+    a.href     = url;
+    a.download = `${name}_${ts}.webm`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 2000);
+    recChunks  = [];
+  }
+
+  window.toggleRec = function () {
+    if (!isRec) startRec(); else stopRec();
+  };
+
+  // Если станция останавливается — останавливаем запись
+  window.addEventListener('DOMContentLoaded', () => {
+    const audio = document.getElementById('audio-player');
+    if (!audio) return;
+    audio.addEventListener('pause', () => { if (isRec) stopRec(); });
+    audio.addEventListener('ended', () => { if (isRec) stopRec(); });
+  });
+})();
+
+// ─── Кастомные дропдауны тегов и диапазонов ───────────────
+function toggleSelDropdown(which) {
+  const trigger  = document.getElementById(which + '-trigger');
+  const dropdown = document.getElementById(which + '-dropdown');
+  const isOpen   = dropdown.classList.contains('open');
+  // Закрыть оба
+  ['tag','range'].forEach(w => {
+    document.getElementById(w + '-trigger')?.classList.remove('open');
+    document.getElementById(w + '-dropdown')?.classList.remove('open');
+  });
+  if (!isOpen) {
+    trigger.classList.add('open');
+    dropdown.classList.add('open');
+  }
+}
+
+// Закрыть дропдауны при клике вне
+document.addEventListener('click', e => {
+  if (!e.target.closest('#tag-wrap') && !e.target.closest('#range-wrap')) {
+    ['tag','range'].forEach(w => {
+      document.getElementById(w + '-trigger')?.classList.remove('open');
+      document.getElementById(w + '-dropdown')?.classList.remove('open');
+    });
+  }
+});
+
+// Строим кастомный список по содержимому нативного select
+function syncSelDropdown(which) {
+  const sel    = document.getElementById(which + '-select');
+  const list   = document.getElementById(which + '-dropdown-list');
+  const label  = document.getElementById(which + '-trigger-label');
+  if (!sel || !list) return;
+  list.innerHTML = Array.from(sel.options).map((opt, i) => `
+    <div class="sel-option${sel.selectedIndex === i ? ' selected' : ''}"
+         data-value="${opt.value}"
+         onclick="pickSelOption('${which}','${opt.value}',this)">
+      ${opt.textContent}
+    </div>`).join('');
+  if (sel.selectedIndex >= 0) label.textContent = sel.options[sel.selectedIndex].textContent;
+}
+
+function pickSelOption(which, value, el) {
+  const sel = document.getElementById(which + '-select');
+  sel.value = value;
+  // Обновить выделение
+  el.closest('.sel-dropdown-list').querySelectorAll('.sel-option')
+    .forEach(o => o.classList.toggle('selected', o === el));
+  document.getElementById(which + '-trigger-label').textContent = el.textContent.trim();
+  // Закрыть
+  document.getElementById(which + '-trigger').classList.remove('open');
+  document.getElementById(which + '-dropdown').classList.remove('open');
+  // Trigger change
+  sel.dispatchEvent(new Event('change'));
+}
+
+// Патчим rebuildTagSelect и onTagChange чтобы они обновляли кастомный UI
+const _origRebuildTagSelect = rebuildTagSelect;
+rebuildTagSelect = function(selectedTag) {
+  _origRebuildTagSelect(selectedTag);
+  syncSelDropdown('tag');
+};
+
+// Патчим onTagChange — после него перестраиваем range dropdown
+const _origOnTagChange = onTagChange;
+onTagChange = async function() {
+  await _origOnTagChange();
+  syncSelDropdown('range');
+  syncSelDropdown('tag');
+};
+
+// Патчим loadStations — обновляем метку range после загрузки
+const _origLoadStations = loadStations;
+loadStations = async function() {
+  await _origLoadStations();
+  syncSelDropdown('range');
+};
+
+window.addEventListener('DOMContentLoaded', () => {
+  syncSelDropdown('tag');
+  syncSelDropdown('range');
+});
+
+// ─── Экспорт / Импорт избранного ─────────────────────────
+function exportFavM3U() {
+  const favs = loadFavs();
+  if (!favs.length) { alert('Список избранного пуст'); return; }
+  const lines = ['#EXTM3U'];
+  favs.forEach(s => {
+    const name = s.name || 'Unknown';
+    const url  = s.url_resolved || s.url || '';
+    lines.push(`#EXTINF:-1 tvg-logo="${s.favicon || ''}" group-title="${s.tags || ''}",${name}`);
+    lines.push(url);
+  });
+  const blob = new Blob([lines.join('\n')], { type: 'audio/x-mpegurl' });
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(blob),
+    download: 'radiowave-favourites.m3u'
+  });
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 2000);
+}
+
+function exportFavJSON() {
+  const favs = loadFavs();
+  if (!favs.length) { alert('Список избранного пуст'); return; }
+  const blob = new Blob([JSON.stringify(favs, null, 2)], { type: 'application/json' });
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(blob),
+    download: 'radiowave-favourites.json'
+  });
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 2000);
+}
+
+function importFavJSON() {
+  const input = Object.assign(document.createElement('input'), {
+    type: 'file', accept: '.json,application/json'
+  });
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!Array.isArray(data)) throw new Error('Неверный формат');
+        const existing = loadFavs();
+        const merged = [...existing];
+        let added = 0;
+        data.forEach(s => {
+          if (s.stationuuid && !merged.some(f => f.stationuuid === s.stationuuid)) {
+            merged.push(trimStation(s)); added++;
+          }
+        });
+        saveFavs(merged);
+        updateFavCount();
+        showFavToast(`↑ Импортировано: ${added} станций`);
+      } catch(err) {
+        alert('Ошибка импорта: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  };
+  document.body.appendChild(input);
+  input.click();
+  setTimeout(() => document.body.removeChild(input), 5000);
+}
+
+// ─── GIF-пикер (Tenor API) ────────────────────────────────
+const TENOR_KEY    = 'AIzaSyC-P6_qz3FzCoXGLk6tgitZo4jEJ5mLzD8';
+const TENOR_CLIENT = 'tenor_web';
+const TENOR_MEDIA  = 'gif,tinygif,mediumgif';
+const TENOR_FIELDS = 'results.id,results.media_formats,results.content_description,results.title';
+const TENOR_BASE   = 'https://tenor.googleapis.com/v2';
+
+function tenorParams(extra = {}) {
+  const p = new URLSearchParams({
+    key: TENOR_KEY,
+    client_key: TENOR_CLIENT,
+    locale: 'ru',
+    media_filter: TENOR_MEDIA,
+    fields: TENOR_FIELDS,
+    limit: 24,
+    ...extra
+  });
+  return p.toString();
+}
+
+function toggleGifPicker(side) {
+  const picker = document.getElementById('gif-picker-' + side);
+  const btn    = document.getElementById('gif-btn-' + side);
+  if (!picker || !btn) return;
+
+  const isOpen = picker.classList.contains('open');
+
+  ['desktop','mobile'].forEach(s => {
+    document.getElementById('gif-picker-' + s)?.classList.remove('open');
+    document.getElementById('gif-btn-' + s)?.classList.remove('active');
+  });
+
+  if (!isOpen) {
+    picker.classList.add('open');
+    btn.classList.add('active');
+
+    positionGifPicker(picker, btn);
+
+    const grid = document.getElementById('gif-grid-' + side);
+    if (grid && grid.querySelector('.gif-status')) loadTrendingGifs(side);
+
+    // На мобильном не фокусируем — иначе выскочит клавиатура и перекроет пикер
+    if (window.innerWidth >= 680) {
+      setTimeout(() => document.getElementById('gif-search-' + side)?.focus(), 50);
+    }
+  }
+}
+
+function positionGifPicker(picker, btn) {
+  const pickerH = 300;
+  const pickerW = window.innerWidth < 680 ? window.innerWidth - 16 : 320;
+
+  // На мобильном учитываем visualViewport (реальная высота минус клавиатура)
+  const vv     = window.visualViewport;
+  const vpTop  = vv ? vv.offsetTop  : 0;
+  const vpH    = vv ? vv.height     : window.innerHeight;
+
+  const r    = btn.getBoundingClientRect();
+  // Пробуем разместить над кнопкой
+  let top  = r.top - pickerH - 6;
+  let left = r.left;
+
+  // Не выходить за верхний край видимой области
+  if (top < vpTop + 8) top = Math.min(r.bottom + 6, vpTop + vpH - pickerH - 8);
+  // Не выходить за нижний край
+  if (top + pickerH > vpTop + vpH - 8) top = vpTop + vpH - pickerH - 8;
+  // Не выходить за правый край
+  if (left + pickerW > window.innerWidth - 8) left = window.innerWidth - pickerW - 8;
+  if (left < 8) left = 8;
+
+  picker.style.top  = top  + 'px';
+  picker.style.left = left + 'px';
+  picker.style.width = pickerW + 'px';
+}
+
+// Перепозиционируем при изменении visualViewport (появление/скрытие клавиатуры)
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', () => {
+    ['desktop','mobile'].forEach(s => {
+      const picker = document.getElementById('gif-picker-' + s);
+      const btn    = document.getElementById('gif-btn-' + s);
+      if (picker?.classList.contains('open') && btn) positionGifPicker(picker, btn);
+    });
+  });
+}
+
+async function loadTrendingGifs(side) {
+  const grid = document.getElementById('gif-grid-' + side);
+  if (!grid) return;
+  grid.innerHTML = '<div class="gif-status">Загрузка…</div>';
+  try {
+    const r = await fetch(`${TENOR_BASE}/featured?${tenorParams()}`);
+    const d = await r.json();
+    renderGifGrid(grid, d.results, side);
+  } catch(e) {
+    grid.innerHTML = '<div class="gif-status">Ошибка загрузки</div>';
+  }
+}
+
+async function searchGif(side) {
+  const input = document.getElementById('gif-search-' + side);
+  const q = (input?.value || '').trim();
+  const grid = document.getElementById('gif-grid-' + side);
+  if (!grid) return;
+  if (!q) { loadTrendingGifs(side); return; }
+  grid.innerHTML = '<div class="gif-status">Поиск…</div>';
+  try {
+    const r = await fetch(`${TENOR_BASE}/search?${tenorParams({ q })}`);
+    const d = await r.json();
+    renderGifGrid(grid, d.results, side);
+  } catch(e) {
+    grid.innerHTML = '<div class="gif-status">Ошибка поиска</div>';
+  }
+}
+
+function renderGifGrid(grid, results, side) {
+  if (!results?.length) {
+    grid.innerHTML = '<div class="gif-status">Ничего не найдено</div>';
+    return;
+  }
+  grid.innerHTML = '';
+  results.forEach(r => {
+    const fmt = r.media_formats || {};
+    const preview = fmt.tinygif?.url || fmt.mediumgif?.url || fmt.gif?.url
+                 || fmt.tinywebp?.url || fmt.webp?.url;
+    if (!preview) return;
+    const item = document.createElement('div');
+    item.className = 'gif-item';
+    item.title = r.content_description || '';
+    const img = document.createElement('img');
+    img.src = preview;
+    img.alt = '';
+    img.loading = 'lazy';
+    item.appendChild(img);
+    item.onclick = () => sendGif(side, img);
+    grid.appendChild(item);
+  });
+}
+
+function sendGif(side, previewImg) {
+  if (!chatConnected) { chatSysMsg('chat_no_conn'); return; }
+  const nick = getChatNick();
+  const clonedImg = previewImg.cloneNode(false);
+  clonedImg.className = 'chat-gif-img';
+  clonedImg.style.cssText = '';
+  const url = previewImg.src;
+  const data = { type: 'gif', nick, url };
+  publishChat(data);
+  appendChatEl(buildGifMsg(nick, clonedImg, true), true);
+  toggleGifPicker(side);
+}
+
+function buildGifMsg(nick, imgEl, isMine = true) {
+  const wrap = document.createElement('div');
+  wrap.className = 'chat-msg ' + (isMine ? 'mine' : 'theirs');
+  wrap.dataset.replyNick = nick;
+  wrap.dataset.replyText = '[GIF]';
+
+  const nickEl = document.createElement('div');
+  nickEl.className = 'chat-msg-nick';
+  nickEl.textContent = nick;
+  const time = document.createElement('div');
+  time.className = 'chat-msg-time';
+  time.textContent = new Date().toLocaleTimeString('ru', {hour:'2-digit', minute:'2-digit'});
+  const replyBtn = document.createElement('button');
+  replyBtn.className = 'chat-reply-btn';
+  replyBtn.textContent = '↩';
+  const meta = document.createElement('div');
+  meta.className = 'chat-msg-meta';
+  meta.append(nickEl, time, replyBtn);
+
+  const bubble = document.createElement('div');
+  bubble.className = 'chat-msg-bubble';
+  bubble.style.padding = '4px';
+  bubble.appendChild(imgEl);
+
+  wrap.append(meta, bubble);
+  return wrap;
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.gif-picker') && !e.target.closest('.chat-gif-btn')) {
+    ['desktop','mobile'].forEach(s => {
+      document.getElementById('gif-picker-' + s)?.classList.remove('open');
+      document.getElementById('gif-btn-' + s)?.classList.remove('active');
+    });
+  }
+});
 </script>
+<!-- GIF pickers (fixed, outside any overflow container) -->
+<div class="gif-picker" id="gif-picker-desktop">
+  <div class="gif-picker-search">
+    <input class="gif-search-input" id="gif-search-desktop" placeholder="Поиск GIF..." onkeydown="if(event.key==='Enter')searchGif('desktop')"/>
+    <button class="gif-search-btn" onclick="searchGif('desktop')">Найти</button>
+    <button class="gif-close-btn" onclick="toggleGifPicker('desktop')">✕</button>
+  </div>
+  <div class="gif-grid" id="gif-grid-desktop"><div class="gif-status">Введите запрос для поиска</div></div>
+</div>
+<div class="gif-picker" id="gif-picker-mobile">
+  <div class="gif-picker-search">
+    <input class="gif-search-input" id="gif-search-mobile" placeholder="Поиск GIF..." onkeydown="if(event.key==='Enter')searchGif('mobile')"/>
+    <button class="gif-search-btn" onclick="searchGif('mobile')">Найти</button>
+    <button class="gif-close-btn" onclick="toggleGifPicker('mobile')">✕</button>
+  </div>
+  <div class="gif-grid" id="gif-grid-mobile"><div class="gif-status">Введите запрос для поиска</div></div>
+</div>
 </body>
 </html>
