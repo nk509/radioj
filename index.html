@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>RADIO//WAVE</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -415,8 +415,7 @@ header {
   padding: 8px 12px;
   display: flex; flex-direction: column; gap: 18px;
   scroll-behavior: smooth;
-}
-.chat-messages::-webkit-scrollbar { width: 4px; }
+}.chat-messages::-webkit-scrollbar { width: 4px; }
 .chat-messages::-webkit-scrollbar-track { background: transparent; }
 .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
@@ -488,8 +487,13 @@ header {
 .chat-msg-nick {
   font-family: var(--font-head); font-size: 0.52rem;
   color: rgba(255,60,172,0.85); letter-spacing: 0.08em; text-transform: uppercase;
-  font-weight: 700;
+  font-weight: 700; margin-bottom: 2px;
 }
+.chat-msg.mine .chat-msg-nick { color: var(--accent); }
+
+/* Ник скрыт если сообщение продолжает группу */
+.chat-msg.grouped .chat-msg-nick { display: none; }
+
 .chat-msg-bubble {
   padding: 6px 10px;
   border-radius: 10px;
@@ -498,63 +502,50 @@ header {
 }
 .chat-msg.mine  .chat-msg-bubble { background: rgba(255,60,172,0.13); border: 1px solid rgba(255,60,172,0.3); color: var(--text); border-radius: 10px 10px 10px 2px; }
 .chat-msg.theirs .chat-msg-bubble { background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text); border-radius: 10px 10px 10px 2px; }
-.chat-msg.mine .chat-msg-nick { color: var(--accent); }
-.chat-msg.mine .chat-msg-time  { color: rgba(0,229,255,0.6); }
 
-/* bubble + time wrapper */
-.chat-bubble-row {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+/* Время сбоку от bubble */
+.chat-bubble-wrap {
+  display: flex; flex-direction: row; align-items: stretch; gap: 4px;
 }
-
-/* Desktop: nick left, time right inline with nick above bubble */
-@media (min-width: 680px) {
-  .chat-bubble-row {
-    flex-direction: row;
-    align-items: flex-end;
-    gap: 6px;
-  }
+/* Колонка: кнопка ответа сверху, время снизу */
+.chat-time-reply {
+  display: flex; flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  align-self: stretch;
+  flex-shrink: 0;
 }
-
 .chat-msg-time {
-  color: rgba(255,60,172,0.75); letter-spacing: 0.04em;
+  font-family: 'Press Start 2P', monospace; font-size: 0.42rem;
+  color: rgba(255,255,255,0.25); letter-spacing: 0.02em;
   white-space: nowrap; flex-shrink: 0;
 }
-
-/* Chat meta row — nick · time · reply btn, all same size */
-.chat-msg-meta {
-  display: flex;
-  align-items: stretch;
-  gap: 6px;
-  width: 100%;
-  margin-bottom: 2px;
-}
-.chat-msg-meta .chat-msg-nick,
-.chat-msg-meta .chat-msg-time,
-.chat-msg-meta .chat-reply-btn {
-  font-family: var(--font-body);
-  font-size: 0.65rem;
-  font-weight: 600;
-  line-height: 1;
-  height: auto;
-  padding: 0;
-  border: none;
-  background: transparent;
-  vertical-align: middle;
-  display: inline-flex;
-  align-items: center;
-  box-sizing: border-box;
+/* На мобильном mine — время слева, theirs — справа */
+@media (max-width: 679px) {
+  .chat-msg.mine  .chat-bubble-wrap { flex-direction: row-reverse; }
 }
 
-/* Reply button */
+/* Меньше отступ между сообщениями одной группы */
+.chat-msg.grouped { margin-top: -12px; }
+
+/* reply кнопка */
 .chat-reply-btn {
-  cursor: pointer;
-  color: rgba(255,60,172,0.45);
+  cursor: pointer; background: transparent; border: none;
+  color: rgba(255,60,172,0.5); font-size: 1rem; padding: 2px;
   opacity: 1; transition: color 0.15s;
   flex-shrink: 0;
 }
 .chat-reply-btn:hover { color: var(--accent2); }
+@media (min-width: 680px) {
+  .chat-reply-btn { font-size: 1.1rem; }
+}
+
+/* Chat meta row — только ник + reply */
+.chat-msg-meta {
+  display: flex; align-items: center; gap: 4px;
+  margin-bottom: 1px;
+}
+.chat-msg.grouped .chat-msg-meta { display: none; }
 
 /* Reply quote block inside bubble */
 .chat-reply-quote {
@@ -586,6 +577,67 @@ header {
   transition: color 0.15s; flex-shrink: 0;
 }
 .chat-reply-cancel:hover { color: var(--accent2); }
+
+@media (min-width: 680px) {
+  .chat-title     { font-size: 0.78rem; }
+  .chat-online    { font-size: 0.7rem; }
+  .chat-msg-nick  { font-size: 0.72rem; }
+  .chat-msg-time  { font-size: 0.52rem; }
+  .chat-sys       { font-size: 0.72rem; }
+  .chat-msg-bubble { font-size: 0.92rem; }
+  .chat-nick-input { font-size: 0.82rem; }
+}
+/* ── Station info modal ─────────────────────────────────── */
+.si-row {
+  display: flex; flex-direction: column; gap: 3px;
+  padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.si-row:last-child { border-bottom: none; }
+.si-label {
+  font-family: var(--font-head); font-size: 0.52rem;
+  color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase;
+}
+.si-value {
+  font-family: var(--font-body); font-size: 0.82rem;
+  color: var(--text); word-break: break-all; line-height: 1.4;
+}
+.si-value a { color: var(--accent); text-decoration: none; }
+.si-value a:hover { text-decoration: underline; }
+.si-actions { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+.si-btn {
+  font-family: var(--font-head); font-size: 0.5rem; letter-spacing: 0.07em;
+  padding: 4px 10px; border-radius: 4px; cursor: pointer;
+  border: 1px solid var(--border); background: transparent; color: var(--muted);
+  transition: all 0.15s; text-transform: uppercase;
+}
+.si-btn:hover { border-color: var(--accent); color: var(--accent); }
+.si-btn.copied { border-color: #22c55e; color: #22c55e; }
+.np-name.clickable { cursor: pointer; transition: color 0.15s; }
+.np-name.clickable:hover { color: var(--accent2); }
+
+/* ── Chat resize handle ──────────────────────────────────── */
+@media (min-width: 680px) {
+  .chat-resize-handle {
+    display: flex; align-items: center; justify-content: center;
+    height: 10px; cursor: ns-resize;
+    border-top: 1px solid var(--border);
+    border-radius: 0 0 10px 10px;
+    background: transparent;
+    transition: background 0.15s;
+    flex-shrink: 0; user-select: none;
+  }
+  .chat-resize-handle:hover, .chat-resize-handle.dragging {
+    background: rgba(0,229,255,0.06);
+  }
+  .chat-resize-handle::before {
+    content: ''; width: 32px; height: 3px;
+    border-radius: 2px; background: var(--border);
+    transition: background 0.15s;
+  }
+  .chat-resize-handle:hover::before, .chat-resize-handle.dragging::before {
+    background: var(--accent);
+  }
+}
 
 /* ── GIF picker ──────────────────────────────── */
 .gif-picker {
@@ -853,11 +905,11 @@ header {
 }
 
 .ticker-text {
-  font-family: var(--font-head);
-  font-size: 0.56rem;
-  font-weight: 700;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.52rem;
+  font-weight: 400;
   line-height: 1;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   image-rendering: pixelated;
   -webkit-font-smoothing: none;
@@ -2097,6 +2149,7 @@ input[type=range]::-moz-range-thumb {
       <button class="chat-share-btn" id="chat-share-desktop" onclick="chatShareStation('desktop')" title="Поделиться станцией" disabled>📡</button>
       <button class="chat-send-btn" onclick="chatSend('desktop')">➤</button>
     </div>
+    <div class="chat-resize-handle" id="chat-resize-handle"></div>
   </div>
 </div>
 
@@ -2653,6 +2706,7 @@ window.addEventListener('DOMContentLoaded', () => {
   rebuildTagSelect();
   onTagChange();
   updateFavCount();
+  initChatCrypto();
   initNickInputs();
   initChatDelegation();
   chatConnect();
@@ -2740,7 +2794,10 @@ function tuneToIndex(idx) {
 }
 
 function updateNowPlaying(s) {
-  document.getElementById('np-name').textContent = s.name || t('np_no_name');
+  const npName = document.getElementById('np-name');
+  npName.textContent = s.name || t('np_no_name');
+  npName.classList.add('clickable');
+  npName.onclick = () => openStationInfo(s);
   document.getElementById('np-sub').textContent  =
     [s.countrycode, s.language, s.bitrate ? s.bitrate + ' kbps' : ''].filter(Boolean).join(' · ');
   updateChatShareBtn();
@@ -2782,11 +2839,27 @@ function setPlayStopBtn(playing) {
 
 function togglePlayStop() {
   const audio = document.getElementById('audio-player');
-  if (!audio.paused && audio.src) {
-    stopStation();
+  if (!audio.paused) {
+    // Пауза — сохраняем currentStation, просто останавливаем поток
+    audio.pause();
+    audio.src = '';
+    setPlayStopBtn(false);
+    clearTicker();
+    clearTrackMeta();
+    clearInterval(metaTimer);
+    document.getElementById('crt-frame').classList.remove('has-link');
+    updateChatShareBtn();
   } else if (currentStation) {
+    // Возобновляем ту же станцию
+    audio.src = currentStation.url_resolved || currentStation.url;
     audio.play().catch(() => {});
     setPlayStopBtn(true);
+    setTicker(currentStation.name, false);
+    updateCRT(currentStation, false);
+    if (currentStation.homepage?.startsWith('http')) {
+      document.getElementById('crt-frame').classList.add('has-link');
+    }
+    updateChatShareBtn();
   } else if (stations.length) {
     tuneToIndex(currentIdx);
   }
@@ -3093,10 +3166,11 @@ function chatConnect() {
     setTimeout(chatConnect, 4000);
   };
 
-  mqttClient.onMessageArrived = (msg) => {
+  mqttClient.onMessageArrived = async (msg) => {
     try {
-      const data = JSON.parse(msg.payloadString);
-      // Skip echo of our own messages (broker echoes back to sender)
+      const decrypted = await decryptMsg(msg.payloadString);
+      if (!decrypted) return; // не наш трафик — игнорируем
+      const data = JSON.parse(decrypted);
       if (data._cid === mqttClientId) return;
       renderChatMessage(data, false);
     } catch {}
@@ -3147,13 +3221,21 @@ function appendChatEl(el, isMine = false) {
   ['desktop','mobile'].forEach(side => {
     const pane = document.getElementById('chat-messages-' + side);
     if (!pane) return;
-    // First pane gets original, second gets a deep clone
     const node = pane === document.getElementById('chat-messages-desktop') ? el : el.cloneNode(true);
+
+    // Группировка: скрываем ник если предыдущее сообщение от того же ника
+    if (node.classList.contains('chat-msg') && node.dataset.nick) {
+      const prev = pane.querySelector('.chat-msg:last-child');
+      if (prev && prev.dataset.nick === node.dataset.nick &&
+          prev.classList.contains(isMine ? 'mine' : 'theirs')) {
+        node.classList.add('grouped');
+      }
+    }
+
     pane.appendChild(node);
     pane.scrollTop = pane.scrollHeight;
   });
 
-  // Unread badge on mobile when drawer is closed
   if (!drawerOpen && !isMine) {
     unreadCount++;
     const badge = document.getElementById('chat-unread');
@@ -3179,36 +3261,25 @@ function renderChatMessage(data, isMine) {
 function buildTextMsg(data, isMine) {
   const wrap = document.createElement('div');
   wrap.className = 'chat-msg ' + (isMine ? 'mine' : 'theirs');
-  // Store nick+text for reply delegation (works on clones too)
   wrap.dataset.replyNick = data.nick || 'anon';
   wrap.dataset.replyText = data.text || '';
+  wrap.dataset.nick = data.nick || 'anon'; // для определения группировки
 
+  const timeStr = new Date().toLocaleTimeString('ru', {hour:'2-digit', minute:'2-digit'});
+
+  // Мета: только ник (скрывается при группировке через .grouped)
   const nick = document.createElement('div');
   nick.className = 'chat-msg-nick';
   nick.textContent = data.nick || 'anon';
 
-  const replyBtn = document.createElement('button');
-  replyBtn.className = 'chat-reply-btn';
-  replyBtn.textContent = '↩';
-  replyBtn.title = 'Ответить';
-  // onclick set via delegation on pane — works on clones
-
-  const timeStr = new Date().toLocaleTimeString('ru', {hour:'2-digit', minute:'2-digit'});
-
-  const time = document.createElement('div');
-  time.className = 'chat-msg-time';
-  time.textContent = timeStr;
-
   const metaRow = document.createElement('div');
   metaRow.className = 'chat-msg-meta';
   metaRow.appendChild(nick);
-  metaRow.appendChild(time);
-  metaRow.appendChild(replyBtn);
 
+  // Bubble
   const bubble = document.createElement('div');
   bubble.className = 'chat-msg-bubble';
 
-  // Quote block if this is a reply
   if (data.replyTo) {
     const quote = document.createElement('div');
     quote.className = 'chat-reply-quote';
@@ -3220,8 +3291,31 @@ function buildTextMsg(data, isMine) {
   text.textContent = data.text || '';
   bubble.appendChild(text);
 
+  // Время сбоку
+  const time = document.createElement('div');
+  time.className = 'chat-msg-time';
+  time.textContent = timeStr;
+
+  // Кнопка ответа — рядом со временем снизу
+  const replyBtn = document.createElement('button');
+  replyBtn.className = 'chat-reply-btn';
+  replyBtn.textContent = '↩';
+  replyBtn.title = 'Ответить';
+
+  // Обёртка: время + reply в колонку, выровненную по низу bubble
+  const timeReply = document.createElement('div');
+  timeReply.className = 'chat-time-reply';
+  timeReply.appendChild(replyBtn);
+  timeReply.appendChild(time);
+
+  // Обёртка bubble + [время+reply]
+  const bubbleWrap = document.createElement('div');
+  bubbleWrap.className = 'chat-bubble-wrap';
+  bubbleWrap.appendChild(bubble);
+  bubbleWrap.appendChild(timeReply);
+
   wrap.appendChild(metaRow);
-  wrap.appendChild(bubble);
+  wrap.appendChild(bubbleWrap);
   return wrap;
 }
 
@@ -3401,9 +3495,51 @@ function chatShareStation(side) {
   renderChatMessage(data, true);
 }
 
-function publishChat(data) {
-  data._cid = mqttClientId; // so we can filter our own echo
-  const msg = new Paho.MQTT.Message(JSON.stringify(data));
+// ── AES-GCM chat encryption ───────────────────────────────
+// Ключ захардкожен — защита от перехвата на уровне сети/брокера,
+// но не от того кто имеет исходник страницы.
+const CHAT_SECRET = 'radiowave-e2e-v1-k9x2mNpQ8rLw';
+let _chatKey = null;
+
+async function initChatCrypto() {
+  const enc  = new TextEncoder();
+  const raw  = enc.encode(CHAT_SECRET);
+  const hash = await crypto.subtle.digest('SHA-256', raw);
+  _chatKey   = await crypto.subtle.importKey(
+    'raw', hash, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']
+  );
+}
+
+async function encryptMsg(plaintext) {
+  if (!_chatKey) return plaintext;
+  const iv  = crypto.getRandomValues(new Uint8Array(12));
+  const enc = new TextEncoder();
+  const ct  = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, _chatKey, enc.encode(plaintext));
+  // iv (12 bytes) + ciphertext → base64
+  const buf = new Uint8Array(12 + ct.byteLength);
+  buf.set(iv, 0);
+  buf.set(new Uint8Array(ct), 12);
+  return btoa(String.fromCharCode(...buf));
+}
+
+async function decryptMsg(b64) {
+  if (!_chatKey) return b64;
+  try {
+    const buf = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+    const iv  = buf.slice(0, 12);
+    const ct  = buf.slice(12);
+    const pt  = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, _chatKey, ct);
+    return new TextDecoder().decode(pt);
+  } catch {
+    return null; // не удалось расшифровать
+  }
+}
+
+async function publishChat(data) {
+  data._cid = mqttClientId;
+  const plaintext = JSON.stringify(data);
+  const payload   = await encryptMsg(plaintext);
+  const msg = new Paho.MQTT.Message(payload);
   msg.destinationName = MQTT_TOPIC;
   msg.qos = 0;
   mqttClient.send(msg);
@@ -3583,6 +3719,10 @@ const I18N = {
     skin_sunset:'Закат', skin_deep:'Глубина', skin_ash:'Пепел', skin_mint:'Мята',
     menu:'МЕНЮ', menu_settings:'Настройки', menu_hotkeys:'Горячие клавиши', menu_about:'О проекте',
     modal_settings:'Настройки', modal_hotkeys:'Горячие клавиши', modal_about:'О проекте',
+    modal_station:'О станции',
+    si_stream:'Поток', si_site:'Сайт', si_country:'Страна', si_language:'Язык',
+    si_tags:'Теги', si_bitrate:'Битрейт', si_state:'Регион', si_no_data:'—',
+    si_copy:'Скопировано', si_open:'Открыть',
     fav_label:'Избранное', tag_edit_title:'Редактор тегов',
     open_site:'открыть сайт ↗', freq_label:'⬤ Частота', menu_clear_confirm:'Очистить избранное?',
     chat_placeholder:'Сообщение...', nick_placeholder:'Ник',
@@ -3617,6 +3757,10 @@ const I18N = {
     skin_sunset:'Sunset', skin_deep:'Deep', skin_ash:'Ash', skin_mint:'Mint',
     menu:'MENU', menu_settings:'Settings', menu_hotkeys:'Hotkeys', menu_about:'About',
     modal_settings:'Settings', modal_hotkeys:'Keyboard Shortcuts', modal_about:'About',
+    modal_station:'Station Info',
+    si_stream:'Stream', si_site:'Website', si_country:'Country', si_language:'Language',
+    si_tags:'Tags', si_bitrate:'Bitrate', si_state:'Region', si_no_data:'—',
+    si_copy:'Copied', si_open:'Open',
     fav_label:'Favourites', tag_edit_title:'Tag Editor',
     open_site:'open site ↗', freq_label:'⬤ Frequency', menu_clear_confirm:'Clear favourites?',
     chat_placeholder:'Message...', nick_placeholder:'Nick',
@@ -3651,6 +3795,10 @@ const I18N = {
     skin_sunset:'Sonnenuntergang', skin_deep:'Tief', skin_ash:'Asche', skin_mint:'Minze',
     menu:'MENÜ', menu_settings:'Einstellungen', menu_hotkeys:'Tastenkürzel', menu_about:'Über das Projekt',
     modal_settings:'Einstellungen', modal_hotkeys:'Tastenkürzel', modal_about:'Über das Projekt',
+    modal_station:'Sender-Info',
+    si_stream:'Stream', si_site:'Website', si_country:'Land', si_language:'Sprache',
+    si_tags:'Tags', si_bitrate:'Bitrate', si_state:'Region', si_no_data:'—',
+    si_copy:'Kopiert', si_open:'Öffnen',
     fav_label:'Favoriten', tag_edit_title:'Tag-Editor',
     open_site:'Website öffnen ↗', freq_label:'⬤ Frequenz', menu_clear_confirm:'Favoriten löschen?',
     chat_placeholder:'Nachricht...', nick_placeholder:'Nick',
@@ -3685,6 +3833,10 @@ const I18N = {
     skin_sunset:'Coucher', skin_deep:'Abyssal', skin_ash:'Cendre', skin_mint:'Menthe',
     menu:'MENU', menu_settings:'Paramètres', menu_hotkeys:'Raccourcis', menu_about:'À propos',
     modal_settings:'Paramètres', modal_hotkeys:'Raccourcis clavier', modal_about:'À propos',
+    modal_station:'Infos station',
+    si_stream:'Flux', si_site:'Site web', si_country:'Pays', si_language:'Langue',
+    si_tags:'Tags', si_bitrate:'Débit', si_state:'Région', si_no_data:'—',
+    si_copy:'Copié', si_open:'Ouvrir',
     fav_label:'Favoris', tag_edit_title:'Éditeur de tags',
     open_site:'ouvrir le site ↗', freq_label:'⬤ Fréquence', menu_clear_confirm:'Effacer les favoris ?',
     chat_placeholder:'Message...', nick_placeholder:'Pseudo',
@@ -3719,6 +3871,10 @@ const I18N = {
     skin_sunset:'Atardecer', skin_deep:'Profundo', skin_ash:'Ceniza', skin_mint:'Menta',
     menu:'MENÚ', menu_settings:'Configuración', menu_hotkeys:'Atajos', menu_about:'Acerca de',
     modal_settings:'Configuración', modal_hotkeys:'Atajos de teclado', modal_about:'Acerca de',
+    modal_station:'Info de estación',
+    si_stream:'Flujo', si_site:'Sitio web', si_country:'País', si_language:'Idioma',
+    si_tags:'Etiquetas', si_bitrate:'Bitrate', si_state:'Región', si_no_data:'—',
+    si_copy:'Copiado', si_open:'Abrir',
     fav_label:'Favoritos', tag_edit_title:'Editor de etiquetas',
     open_site:'abrir sitio ↗', freq_label:'⬤ Frecuencia', menu_clear_confirm:'¿Borrar favoritos?',
     chat_placeholder:'Mensaje...', nick_placeholder:'Nick',
@@ -3753,6 +3909,10 @@ const I18N = {
     skin_sunset:'サンセット', skin_deep:'ディープ', skin_ash:'アッシュ', skin_mint:'ミント',
     menu:'メニュー', menu_settings:'設定', menu_hotkeys:'ショートカット', menu_about:'について',
     modal_settings:'設定', modal_hotkeys:'キーボードショートカット', modal_about:'について',
+    modal_station:'局情報',
+    si_stream:'ストリーム', si_site:'ウェブサイト', si_country:'国', si_language:'言語',
+    si_tags:'タグ', si_bitrate:'ビットレート', si_state:'地域', si_no_data:'—',
+    si_copy:'コピー済み', si_open:'開く',
     fav_label:'お気に入り', tag_edit_title:'タグ編集',
     open_site:'サイトを開く ↗', freq_label:'⬤ 周波数', menu_clear_confirm:'お気に入りを削除？',
     chat_placeholder:'メッセージ…', nick_placeholder:'ニック',
@@ -3837,6 +3997,55 @@ function setLang(lang) { currentLang = lang; localStorage.setItem(LANG_KEY, lang
 function loadLang() { currentLang = localStorage.getItem(LANG_KEY) || 'ru'; applyLang(); }
 
 // ─── Info modals ──────────────────────────────────────────
+function openStationInfo(s) {
+  if (!s) return;
+  const overlay = document.getElementById('info-modal-overlay');
+  const title   = document.getElementById('info-modal-title');
+  const body    = document.getElementById('info-modal-body');
+
+  title.textContent = s.name || t('np_no_name');
+
+  function siRow(label, value, url) {
+    if (!value) return '';
+    const actions = url
+      ? `<div class="si-actions">
+           <a class="si-btn" href="${url}" target="_blank" rel="noopener">${t('si_open')} ↗</a>
+         </div>`
+      : `<div class="si-actions">
+           <button class="si-btn" onclick="siCopy(this,'${value.replace(/'/g,"\\'")}')">⎘ Copy</button>
+         </div>`;
+    return `<div class="si-row">
+      <div class="si-label">${label}</div>
+      <div class="si-value">${url ? `<a href="${url}" target="_blank" rel="noopener">${value}</a>` : value}</div>
+      ${actions}
+    </div>`;
+  }
+
+  const streamUrl = s.url_resolved || s.url || '';
+  const homepage  = s.homepage && s.homepage.startsWith('http') ? s.homepage : '';
+
+  body.innerHTML = `
+    ${s.favicon ? `<div style="text-align:center;margin-bottom:12px"><img src="${s.favicon}" style="width:48px;height:48px;border-radius:8px;object-fit:contain;background:rgba(0,0,0,0.3)" onerror="this.style.display='none'"></div>` : ''}
+    ${siRow(t('si_stream'), streamUrl, streamUrl)}
+    ${homepage ? siRow(t('si_site'), homepage, homepage) : ''}
+    ${s.country  ? siRow(t('si_country'),  s.country)  : ''}
+    ${s.state    ? siRow(t('si_state'),    s.state)    : ''}
+    ${s.language ? siRow(t('si_language'), s.language) : ''}
+    ${s.tags     ? siRow(t('si_tags'),     s.tags)     : ''}
+    ${s.bitrate  ? siRow(t('si_bitrate'),  s.bitrate + ' kbps') : ''}
+  `;
+
+  overlay.classList.add('open');
+}
+
+function siCopy(btn, text) {
+  navigator.clipboard?.writeText(text).then(() => {
+    btn.textContent = '✓ ' + t('si_copy');
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '⎘ Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
 function openInfoModal(type) {
   const overlay = document.getElementById('info-modal-overlay');
   const title   = document.getElementById('info-modal-title');
@@ -4465,26 +4674,38 @@ function buildGifMsg(nick, imgEl, isMine = true) {
   wrap.className = 'chat-msg ' + (isMine ? 'mine' : 'theirs');
   wrap.dataset.replyNick = nick;
   wrap.dataset.replyText = '[GIF]';
+  wrap.dataset.nick = nick;
 
   const nickEl = document.createElement('div');
   nickEl.className = 'chat-msg-nick';
   nickEl.textContent = nick;
-  const time = document.createElement('div');
-  time.className = 'chat-msg-time';
-  time.textContent = new Date().toLocaleTimeString('ru', {hour:'2-digit', minute:'2-digit'});
-  const replyBtn = document.createElement('button');
-  replyBtn.className = 'chat-reply-btn';
-  replyBtn.textContent = '↩';
   const meta = document.createElement('div');
   meta.className = 'chat-msg-meta';
-  meta.append(nickEl, time, replyBtn);
+  meta.append(nickEl);
 
   const bubble = document.createElement('div');
   bubble.className = 'chat-msg-bubble';
   bubble.style.padding = '4px';
   bubble.appendChild(imgEl);
 
-  wrap.append(meta, bubble);
+  const time = document.createElement('div');
+  time.className = 'chat-msg-time';
+  time.textContent = new Date().toLocaleTimeString('ru', {hour:'2-digit', minute:'2-digit'});
+
+  const replyBtn = document.createElement('button');
+  replyBtn.className = 'chat-reply-btn';
+  replyBtn.textContent = '↩';
+
+  const timeReply = document.createElement('div');
+  timeReply.className = 'chat-time-reply';
+  timeReply.appendChild(replyBtn);
+  timeReply.appendChild(time);
+
+  const bubbleWrap = document.createElement('div');
+  bubbleWrap.className = 'chat-bubble-wrap';
+  bubbleWrap.append(bubble, timeReply);
+
+  wrap.append(meta, bubbleWrap);
   return wrap;
 }
 document.addEventListener('click', e => {
@@ -4495,6 +4716,50 @@ document.addEventListener('click', e => {
     });
   }
 });
+// ── Chat resize handle ────────────────────────────────────
+(function() {
+  const STORAGE_KEY = 'chat_messages_height';
+  const MIN_H = 80;
+
+  function initChatResize() {
+    const handle = document.getElementById('chat-resize-handle');
+    const msgs   = document.getElementById('chat-messages-desktop');
+    if (!handle || !msgs) return;
+
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) msgs.style.height = saved + 'px';
+
+    let startY, startH;
+
+    handle.addEventListener('mousedown', e => {
+      e.preventDefault();
+      startY = e.clientY;
+      startH = msgs.getBoundingClientRect().height;
+      handle.classList.add('dragging');
+      document.body.style.cursor = 'ns-resize';
+      document.body.style.userSelect = 'none';
+
+      function onMove(e) {
+        const delta = e.clientY - startY;
+        const msgsTop = msgs.getBoundingClientRect().top;
+        const maxH  = window.innerHeight - msgsTop - 180;
+        msgs.style.height = Math.min(maxH, Math.max(MIN_H, startH + delta)) + 'px';
+      }
+      function onUp() {
+        handle.classList.remove('dragging');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        localStorage.setItem(STORAGE_KEY, parseInt(msgs.style.height));
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup',   onUp);
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup',   onUp);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', initChatResize);
+})();
 </script>
 <!-- GIF pickers (fixed, outside any overflow container) -->
 <div class="gif-picker" id="gif-picker-desktop">
