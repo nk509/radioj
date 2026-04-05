@@ -587,6 +587,34 @@ header {
   .chat-msg-bubble { font-size: 0.92rem; }
   .chat-nick-input { font-size: 0.82rem; }
 }
+/* ── Donate modal ───────────────────────────────────────── */
+.donate-desc {
+  font-size: 0.72rem; color: var(--muted); line-height: 1.6; margin-bottom: 18px;
+}
+.donate-coins {
+  display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;
+}
+.donate-coin {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  background: rgba(0,229,255,0.04); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px; flex: 1; min-width: 160px;
+}
+.donate-coin-title {
+  font-family: var(--font-head); font-size: 0.7rem; font-weight: 700;
+  color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 6px;
+}
+.donate-icon { font-size: 1rem; }
+.donate-qr {
+  width: 140px; height: 140px; border-radius: 8px;
+  border: 2px solid rgba(0,229,255,0.2);
+}
+.donate-addr {
+  font-family: 'Courier New', monospace; font-size: 0.52rem;
+  color: var(--muted); word-break: break-all; text-align: center; line-height: 1.5;
+}
+.donate-copy-btn { align-self: stretch; text-align: center; }
+
 /* ── Station info modal ─────────────────────────────────── */
 .si-row {
   display: flex; flex-direction: column; gap: 3px;
@@ -1892,7 +1920,7 @@ input[type=range]::-moz-range-thumb {
       <button class="hdr-btn hdr-btn-rpg" onclick="window.open('rpg-game.html','_blank')" title="Dungeon RPG">⚔</button>
 
       <!-- Skin: paintbrush SVG -->
-      <button class="hdr-btn" id="skin-btn" onclick="toggleSkinPanel()" title="Скины">
+      <button class="hdr-btn" id="skin-btn" onclick="toggleSkinPanel()" title="Скины" data-i18n-title="title_skins">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M18.37 2.63 14 7l-1.59-1.59a2 2 0 0 0-2.82 0L8 7l9 9 1.59-1.59a2 2 0 0 0 0-2.82L17 10l4.37-4.37a2.12 2.12 0 1 0-3-3Z"/>
           <path d="M9 8c-2 3-4 3.5-7 4l8 10c2-1 6-5 6-7"/>
@@ -1904,7 +1932,7 @@ input[type=range]::-moz-range-thumb {
       <button class="hdr-btn hdr-btn-lang" id="lang-btn" onclick="toggleLangPanel()">RU</button>
 
       <!-- Burger: three lines -->
-      <button class="hdr-btn hdr-btn-burger" id="menu-btn" onclick="toggleMenuPanel()" title="Меню">
+      <button class="hdr-btn hdr-btn-burger" id="menu-btn" onclick="toggleMenuPanel()" title="Меню" data-i18n-title="title_menu">
         <span class="burger-lines">
           <span></span><span></span><span></span>
         </span>
@@ -1975,6 +2003,9 @@ input[type=range]::-moz-range-thumb {
           <div class="menu-item" onclick="openInfoModal('about');closeAllPanels()">
             <span class="menu-icon">ℹ</span><span data-i18n="menu_about">О проекте</span>
           </div>
+          <div class="menu-item" onclick="openInfoModal('donate');closeAllPanels()">
+            <span class="menu-icon">₿</span><span data-i18n="menu_donate">Донаты</span>
+          </div>
         </div>
       </div>
 
@@ -2009,7 +2040,7 @@ input[type=range]::-moz-range-thumb {
       <div class="fav-dropdown-list" id="fav-dropdown-list"></div>
     </div>
   </div>
-  <button class="np-fav" id="controls-fav" onclick="toggleFavourite()" title="В избранное"><svg class="fav-heart-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
+  <button class="np-fav" id="controls-fav" onclick="toggleFavourite()" title="В избранное" data-i18n-title="title_fav_btn"><svg class="fav-heart-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
   <div class="status-bar" id="status-bar">Загрузка…</div>
 </div>
 
@@ -2146,7 +2177,7 @@ input[type=range]::-moz-range-thumb {
       <input class="chat-nick-input" id="chat-nick-desktop" maxlength="16" placeholder="Ник" />
       <input class="chat-text-input" id="chat-input-desktop" maxlength="280" placeholder="Сообщение..." onkeydown="if(event.key==='Enter')chatSend('desktop')" />
       <button class="chat-gif-btn" id="gif-btn-desktop" onclick="toggleGifPicker('desktop')" title="GIF">GIF</button>
-      <button class="chat-share-btn" id="chat-share-desktop" onclick="chatShareStation('desktop')" title="Поделиться станцией" disabled>📡</button>
+      <button class="chat-share-btn" id="chat-share-desktop" onclick="chatShareStation('desktop')" title="Поделиться станцией" data-i18n-title="title_share" disabled>📡</button>
       <button class="chat-send-btn" onclick="chatSend('desktop')">➤</button>
     </div>
     <div class="chat-resize-handle" id="chat-resize-handle"></div>
@@ -2175,7 +2206,7 @@ input[type=range]::-moz-range-thumb {
     <input class="chat-nick-input" id="chat-nick-mobile" maxlength="16" placeholder="Ник" />
     <input class="chat-text-input" id="chat-input-mobile" maxlength="280" placeholder="Сообщение..." onkeydown="if(event.key==='Enter')chatSend('mobile')" />
     <button class="chat-gif-btn" id="gif-btn-mobile" onclick="toggleGifPicker('mobile')" title="GIF">GIF</button>
-    <button class="chat-share-btn" id="chat-share-mobile" onclick="chatShareStation('mobile')" title="Поделиться" disabled>📡</button>
+    <button class="chat-share-btn" id="chat-share-mobile" onclick="chatShareStation('mobile')" title="Поделиться" data-i18n-title="title_share" disabled>📡</button>
     <button class="chat-send-btn" onclick="chatSend('mobile')">➤</button>
   </div>
 </div>
@@ -2198,7 +2229,7 @@ input[type=range]::-moz-range-thumb {
     <a class="svc-btn yandex"  id="svc-yandex"  href="#" target="_blank" rel="noopener"><span class="svc-icon">🎧</span>Яндекс</a>
   </div>
   <button class="np-fav" id="np-fav" onclick="toggleFavourite()" title="В избранное"><svg class="fav-heart-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
-  <button class="np-rec" id="np-rec" onclick="toggleRec()" title="Запись эфира"><div class="np-rec-dot"></div></button>
+  <button class="np-rec" id="np-rec" onclick="toggleRec()" title="Запись эфира" data-i18n-title="title_rec"><div class="np-rec-dot"></div></button>
   <button class="np-stop" id="np-playstop" onclick="togglePlayStop()" title="Play / Stop"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg></button>
 </div>
 
@@ -2537,8 +2568,8 @@ function setNeedle(pct) {
 
 // ─── Tuner info display ───────────────────────────────────
 function updateTunerInfo(idx) {
-  const rangeOpt = document.getElementById('range-select').selectedOptions[0];
-  const bandNum  = rangeOpt ? (parseInt(rangeOpt.value) + 1) : '1';
+  const rangeSelect = document.getElementById('range-select');
+  const bandNum  = rangeSelect ? (rangeSelect.selectedIndex + 1) : 1;
   const stationNum = idx + 1;
   document.getElementById('tuner-station-info').textContent =
     `ST ${stationNum}  ·  BAND ${bandNum}`;
@@ -2709,6 +2740,9 @@ window.addEventListener('DOMContentLoaded', () => {
   initChatCrypto();
   initNickInputs();
   initChatDelegation();
+  _restoringHistory = true;
+  restoreChatHistory();
+  _restoringHistory = false;
   chatConnect();
   const audio = document.getElementById('audio-player');
   if (audio) {
@@ -3210,6 +3244,32 @@ function createSysEl(key) {
   return d;
 }
 
+// ── Chat history (persist last 20 messages) ───────────────
+const CHAT_HISTORY_KEY = 'chat_history';
+const CHAT_HISTORY_MAX = 20;
+
+function saveChatHistory(data, isMine) {
+  // Сохраняем только текстовые, gif и station сообщения
+  if (!data || data.type === undefined && !data.text && !data.url) return;
+  try {
+    const history = JSON.parse(localStorage.getItem(CHAT_HISTORY_KEY) || '[]');
+    history.push({ ...data, _isMine: isMine, _ts: Date.now() });
+    if (history.length > CHAT_HISTORY_MAX) history.splice(0, history.length - CHAT_HISTORY_MAX);
+    localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(history));
+  } catch {}
+}
+
+function restoreChatHistory() {
+  try {
+    const history = JSON.parse(localStorage.getItem(CHAT_HISTORY_KEY) || '[]');
+    if (!history.length) return;
+    history.forEach(data => {
+      const isMine = data._isMine || false;
+      renderChatMessage(data, isMine);
+    });
+  } catch {}
+}
+
 // ── Station registry for card clicks ─────────────────────
 // Since cloneNode doesn't copy event listeners, we store station
 // data in a global map keyed by a unique id set on the card element.
@@ -3244,6 +3304,8 @@ function appendChatEl(el, isMine = false) {
 }
 
 // ── Render incoming / outgoing message ───────────────────
+let _restoringHistory = false;
+
 function renderChatMessage(data, isMine) {
   if (data.type === 'station') {
     appendChatEl(buildStationCard(data, isMine), isMine);
@@ -3256,6 +3318,8 @@ function renderChatMessage(data, isMine) {
   } else {
     appendChatEl(buildTextMsg(data, isMine), isMine);
   }
+  // Сохраняем в историю (но не при восстановлении)
+  if (!_restoringHistory) saveChatHistory(data, isMine);
 }
 
 function buildTextMsg(data, isMine) {
@@ -3717,7 +3781,9 @@ const I18N = {
   ru: {
     skins:'СКИНЫ', skin_dark:'Тёмный', skin_light:'Светлый', skin_neon:'Неон', skin_retro:'Ретро',
     skin_sunset:'Закат', skin_deep:'Глубина', skin_ash:'Пепел', skin_mint:'Мята',
-    menu:'МЕНЮ', menu_settings:'Настройки', menu_hotkeys:'Горячие клавиши', menu_about:'О проекте',
+    menu:'МЕНЮ', menu_settings:'Настройки', menu_hotkeys:'Горячие клавиши', menu_about:'О проекте', menu_donate:'Донаты',
+    donate_title:'Поддержать проект', donate_desc:'Если вам нравится RadioWave, вы можете поддержать разработку криптовалютой.',
+    donate_copy:'Скопировано!',
     modal_settings:'Настройки', modal_hotkeys:'Горячие клавиши', modal_about:'О проекте',
     modal_station:'О станции',
     si_stream:'Поток', si_site:'Сайт', si_country:'Страна', si_language:'Язык',
@@ -3749,13 +3815,19 @@ const I18N = {
     chat_failed:'Не удалось подключиться, повтор через 6с…', chat_no_conn:'Нет соединения…',
     chat_no_mqtt:'Ошибка: MQTT недоступен',
     err_api:'Не удалось подключиться к radio-browser.info',
-    tag_placeholder:'новый тег, например: lofi',
+        tag_placeholder:'новый тег, например: lofi',
+    fav_stations:'♥ Избранные станции',
+    title_skins:'Скины', title_menu:'Меню',
+    title_fav_btn:'В избранное', title_rec:'Запись эфира',
+    title_share:'Поделиться станцией',
     not_found:'Ничего не найдено для',
   },
   en: {
     skins:'SKINS', skin_dark:'Dark', skin_light:'Light', skin_neon:'Neon', skin_retro:'Retro',
     skin_sunset:'Sunset', skin_deep:'Deep', skin_ash:'Ash', skin_mint:'Mint',
-    menu:'MENU', menu_settings:'Settings', menu_hotkeys:'Hotkeys', menu_about:'About',
+    menu:'MENU', menu_settings:'Settings', menu_hotkeys:'Hotkeys', menu_about:'About', menu_donate:'Donate',
+    donate_title:'Support the project', donate_desc:'If you enjoy RadioWave, you can support development with crypto.',
+    donate_copy:'Copied!',
     modal_settings:'Settings', modal_hotkeys:'Keyboard Shortcuts', modal_about:'About',
     modal_station:'Station Info',
     si_stream:'Stream', si_site:'Website', si_country:'Country', si_language:'Language',
@@ -3787,13 +3859,19 @@ const I18N = {
     chat_failed:'Failed to connect, retrying in 6s…', chat_no_conn:'No connection…',
     chat_no_mqtt:'Error: MQTT unavailable',
     err_api:'Failed to connect to radio-browser.info',
-    tag_placeholder:'new tag, e.g.: lofi',
+        tag_placeholder:'new tag, e.g.: lofi',
+    fav_stations:'♥ Favourite Stations',
+    title_skins:'Skins', title_menu:'Menu',
+    title_fav_btn:'Add to favourites', title_rec:'Record stream',
+    title_share:'Share station',
     not_found:'Nothing found for',
   },
   de: {
     skins:'SKINS', skin_dark:'Dunkel', skin_light:'Hell', skin_neon:'Neon', skin_retro:'Retro',
     skin_sunset:'Sonnenuntergang', skin_deep:'Tief', skin_ash:'Asche', skin_mint:'Minze',
-    menu:'MENÜ', menu_settings:'Einstellungen', menu_hotkeys:'Tastenkürzel', menu_about:'Über das Projekt',
+    menu:'MENÜ', menu_settings:'Einstellungen', menu_hotkeys:'Tastenkürzel', menu_about:'Über das Projekt', menu_donate:'Spenden',
+    donate_title:'Projekt unterstützen', donate_desc:'Wenn Ihnen RadioWave gefällt, können Sie die Entwicklung mit Krypto unterstützen.',
+    donate_copy:'Kopiert!',
     modal_settings:'Einstellungen', modal_hotkeys:'Tastenkürzel', modal_about:'Über das Projekt',
     modal_station:'Sender-Info',
     si_stream:'Stream', si_site:'Website', si_country:'Land', si_language:'Sprache',
@@ -3825,13 +3903,19 @@ const I18N = {
     chat_failed:'Verbindung fehlgeschlagen, neuer Versuch in 6s…', chat_no_conn:'Keine Verbindung…',
     chat_no_mqtt:'Fehler: MQTT nicht verfügbar',
     err_api:'Verbindung zu radio-browser.info fehlgeschlagen',
-    tag_placeholder:'neuer Tag, z.B.: lofi',
+        tag_placeholder:'neuer Tag, z.B.: lofi',
+    fav_stations:'♥ Lieblingssender',
+    title_skins:'Skins', title_menu:'Menü',
+    title_fav_btn:'Zu Favoriten', title_rec:'Stream aufnehmen',
+    title_share:'Sender teilen',
     not_found:'Nichts gefunden für',
   },
   fr: {
     skins:'THÈMES', skin_dark:'Sombre', skin_light:'Clair', skin_neon:'Néon', skin_retro:'Rétro',
     skin_sunset:'Coucher', skin_deep:'Abyssal', skin_ash:'Cendre', skin_mint:'Menthe',
-    menu:'MENU', menu_settings:'Paramètres', menu_hotkeys:'Raccourcis', menu_about:'À propos',
+    menu:'MENU', menu_settings:'Paramètres', menu_hotkeys:'Raccourcis', menu_about:'À propos', menu_donate:'Dons',
+    donate_title:'Soutenir le projet', donate_desc:'Si vous aimez RadioWave, vous pouvez soutenir le développement en crypto.',
+    donate_copy:'Copié !',
     modal_settings:'Paramètres', modal_hotkeys:'Raccourcis clavier', modal_about:'À propos',
     modal_station:'Infos station',
     si_stream:'Flux', si_site:'Site web', si_country:'Pays', si_language:'Langue',
@@ -3863,13 +3947,19 @@ const I18N = {
     chat_failed:'Échec de connexion, nouvelle tentative dans 6s…', chat_no_conn:'Pas de connexion…',
     chat_no_mqtt:'Erreur : MQTT indisponible',
     err_api:'Impossible de se connecter à radio-browser.info',
-    tag_placeholder:'nouveau tag, ex : lofi',
+        tag_placeholder:'nouveau tag, ex : lofi',
+    fav_stations:'♥ Stations favorites',
+    title_skins:'Thèmes', title_menu:'Menu',
+    title_fav_btn:'Ajouter aux favoris', title_rec:'Enregistrer',
+    title_share:'Partager la station',
     not_found:'Rien trouvé pour',
   },
   es: {
     skins:'TEMAS', skin_dark:'Oscuro', skin_light:'Claro', skin_neon:'Neón', skin_retro:'Retro',
     skin_sunset:'Atardecer', skin_deep:'Profundo', skin_ash:'Ceniza', skin_mint:'Menta',
-    menu:'MENÚ', menu_settings:'Configuración', menu_hotkeys:'Atajos', menu_about:'Acerca de',
+    menu:'MENÚ', menu_settings:'Configuración', menu_hotkeys:'Atajos', menu_about:'Acerca de', menu_donate:'Donar',
+    donate_title:'Apoyar el proyecto', donate_desc:'Si te gusta RadioWave, puedes apoyar el desarrollo con cripto.',
+    donate_copy:'¡Copiado!',
     modal_settings:'Configuración', modal_hotkeys:'Atajos de teclado', modal_about:'Acerca de',
     modal_station:'Info de estación',
     si_stream:'Flujo', si_site:'Sitio web', si_country:'País', si_language:'Idioma',
@@ -3901,13 +3991,19 @@ const I18N = {
     chat_failed:'Fallo al conectar, reintentando en 6s…', chat_no_conn:'Sin conexión…',
     chat_no_mqtt:'Error: MQTT no disponible',
     err_api:'No se pudo conectar a radio-browser.info',
-    tag_placeholder:'nueva etiqueta, p.ej.: lofi',
+        tag_placeholder:'nueva etiqueta, p.ej.: lofi',
+    fav_stations:'♥ Estaciones favoritas',
+    title_skins:'Temas', title_menu:'Menú',
+    title_fav_btn:'Añadir a favoritos', title_rec:'Grabar',
+    title_share:'Compartir estación',
     not_found:'Nada encontrado para',
   },
   ja: {
     skins:'スキン', skin_dark:'ダーク', skin_light:'ライト', skin_neon:'ネオン', skin_retro:'レトロ',
     skin_sunset:'サンセット', skin_deep:'ディープ', skin_ash:'アッシュ', skin_mint:'ミント',
-    menu:'メニュー', menu_settings:'設定', menu_hotkeys:'ショートカット', menu_about:'について',
+    menu:'メニュー', menu_settings:'設定', menu_hotkeys:'ショートカット', menu_about:'について', menu_donate:'寄付',
+    donate_title:'プロジェクトを支援', donate_desc:'RadioWaveが気に入ったら、暗号通貨で開発を支援できます。',
+    donate_copy:'コピーしました！',
     modal_settings:'設定', modal_hotkeys:'キーボードショートカット', modal_about:'について',
     modal_station:'局情報',
     si_stream:'ストリーム', si_site:'ウェブサイト', si_country:'国', si_language:'言語',
@@ -3939,7 +4035,11 @@ const I18N = {
     chat_failed:'接続失敗、6秒後に再試行…', chat_no_conn:'接続なし…',
     chat_no_mqtt:'エラー：MQTT 利用不可',
     err_api:'radio-browser.info に接続できませんでした',
-    tag_placeholder:'新しいタグ (例: lofi)',
+        tag_placeholder:'新しいタグ (例: lofi)',
+    fav_stations:'♥ お気に入り局',
+    title_skins:'スキン', title_menu:'メニュー',
+    title_fav_btn:'お気に入りに追加', title_rec:'録音',
+    title_share:'局をシェア',
     not_found:'見つかりませんでした：',
   },
 };
@@ -3960,6 +4060,24 @@ function applyLang() {
   // Tag editor placeholder
   const tagInput = document.getElementById('tag-new-input');
   if (tagInput) tagInput.placeholder = t('tag_placeholder');
+  // Fav dropdown header
+  const favHdr = document.querySelector('.fav-dropdown-header');
+  if (favHdr) favHdr.textContent = t('fav_stations');
+  // Button titles
+  const skinBtn = document.getElementById('skin-btn');
+  if (skinBtn) skinBtn.title = t('title_skins');
+  const menuBtn = document.getElementById('menu-btn');
+  if (menuBtn) menuBtn.title = t('title_menu');
+  ['controls-fav','np-fav'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.title = t('title_fav_btn');
+  });
+  const npRec = document.getElementById('np-rec');
+  if (npRec) npRec.title = t('title_rec');
+  ['chat-share-desktop','chat-share-mobile'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.title = t('title_share');
+  });
   // Band selector labels intentionally NOT translated — always "Band N"
   // Status bar — rebuild from global state
   const status = document.getElementById('status-bar');
@@ -3983,11 +4101,9 @@ function applyLang() {
   const langBtn = document.getElementById('lang-btn');
   if (langBtn) langBtn.textContent = t('lang_code');
   document.querySelectorAll('.lang-item').forEach(el => el.classList.toggle('active', el.dataset.lang === currentLang));
-  // Play/Stop button — re-label without changing state
+  // Play/Stop button — restore SVG icon (не текст)
   const psBtn = document.getElementById('np-playstop');
-  if (psBtn) {
-    psBtn.textContent = psBtn.classList.contains('is-playing') ? t('btn_stop') : t('btn_play');
-  }
+  if (psBtn) setPlayStopBtn(psBtn.classList.contains('is-playing'));
   // Re-translate all chat system messages already in DOM
   document.querySelectorAll('.chat-sys[data-i18n-sys]').forEach(el => {
     el.textContent = t(el.dataset.i18nSys);
@@ -4007,13 +4123,10 @@ function openStationInfo(s) {
 
   function siRow(label, value, url) {
     if (!value) return '';
-    const actions = url
-      ? `<div class="si-actions">
-           <a class="si-btn" href="${url}" target="_blank" rel="noopener">${t('si_open')} ↗</a>
-         </div>`
-      : `<div class="si-actions">
-           <button class="si-btn" onclick="siCopy(this,'${value.replace(/'/g,"\\'")}')">⎘ Copy</button>
-         </div>`;
+    const copyVal = url || value;
+    const actions = `<div class="si-actions">
+      <button class="si-btn" onclick="siCopy(this,'${copyVal.replace(/'/g,"\\'")}')">⎘ Copy</button>
+    </div>`;
     return `<div class="si-row">
       <div class="si-label">${label}</div>
       <div class="si-value">${url ? `<a href="${url}" target="_blank" rel="noopener">${value}</a>` : value}</div>
@@ -4041,6 +4154,15 @@ function openStationInfo(s) {
 function siCopy(btn, text) {
   navigator.clipboard?.writeText(text).then(() => {
     btn.textContent = '✓ ' + t('si_copy');
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '⎘ Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function donateCopy(id, btn) {
+  const text = document.getElementById(id)?.textContent || '';
+  navigator.clipboard?.writeText(text).then(() => {
+    btn.textContent = '✓ ' + t('donate_copy');
     btn.classList.add('copied');
     setTimeout(() => { btn.textContent = '⎘ Copy'; btn.classList.remove('copied'); }, 2000);
   });
@@ -4093,6 +4215,31 @@ function openInfoModal(type) {
       <div class="about-links">
         <a class="about-link" href="https://www.radio-browser.info" target="_blank" rel="noopener">📡 Radio Browser</a>
         <a class="about-link" href="https://github.com/segler-alex/radiobrowser-api" target="_blank" rel="noopener">🔗 API</a>
+      </div>`;
+  } else if (type === 'donate') {
+    title.textContent = t('donate_title');
+    const BTC  = 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh';
+    const USDT = 'TN7pN7mYgQabmN1ykZD5v8EV1G5ZqjDkgS';
+    const qrUrl = addr => `https://api.qrserver.com/v1/create-qr-code/?size=160x160&bgcolor=111827&color=00e5ff&qzone=1&data=${encodeURIComponent(addr)}`;
+    body.innerHTML = `
+      <div class="donate-desc">${t('donate_desc')}</div>
+      <div class="donate-coins">
+        <div class="donate-coin">
+          <div class="donate-coin-title">
+            <span class="donate-icon">₿</span> Bitcoin
+          </div>
+          <img class="donate-qr" src="${qrUrl(BTC)}" alt="BTC QR">
+          <div class="donate-addr" id="donate-btc">${BTC}</div>
+          <button class="si-btn donate-copy-btn" onclick="donateCopy('donate-btc',this)">⎘ Copy</button>
+        </div>
+        <div class="donate-coin">
+          <div class="donate-coin-title">
+            <span class="donate-icon">₮</span> USDT <span style="font-size:0.55rem;color:var(--muted)">(TRC-20)</span>
+          </div>
+          <img class="donate-qr" src="${qrUrl(USDT)}" alt="USDT QR">
+          <div class="donate-addr" id="donate-usdt">${USDT}</div>
+          <button class="si-btn donate-copy-btn" onclick="donateCopy('donate-usdt',this)">⎘ Copy</button>
+        </div>
       </div>`;
   }
   overlay.classList.add('open');
@@ -4659,13 +4806,15 @@ function renderGifGrid(grid, results, side) {
 function sendGif(side, previewImg) {
   if (!chatConnected) { chatSysMsg('chat_no_conn'); return; }
   const nick = getChatNick();
+  const url  = previewImg.src;
+  const data = { type: 'gif', nick, url };
+  publishChat(data);
+  // Локально рендерим через cloneNode (картинка уже загружена)
   const clonedImg = previewImg.cloneNode(false);
   clonedImg.className = 'chat-gif-img';
   clonedImg.style.cssText = '';
-  const url = previewImg.src;
-  const data = { type: 'gif', nick, url };
-  publishChat(data);
   appendChatEl(buildGifMsg(nick, clonedImg, true), true);
+  saveChatHistory(data, true);
   toggleGifPicker(side);
 }
 
